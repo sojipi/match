@@ -1,0 +1,85 @@
+# Mem0 Configuration for AI Matchmaker Application
+# This file configures the memory management system for personality storage
+
+# Vector Database Configuration
+vector_store:
+  provider: "chroma"
+  config:
+    collection_name: "ai_matchmaker_personalities"
+    path: "./data/chroma_db"
+    
+# Embedding Configuration
+embedder:
+  provider: "openai"  # Can be changed to other providers
+  config:
+    model: "text-embedding-ada-002"
+    # api_key will be loaded from environment variables
+
+# Memory Configuration
+memory:
+  # How long to keep memories (in days)
+  retention_days: 365
+  
+  # Maximum number of memories to retrieve per query
+  max_results: 10
+  
+  # Similarity threshold for memory retrieval (0.0 to 1.0)
+  similarity_threshold: 0.7
+  
+  # Enable hybrid search (keyword + semantic)
+  hybrid_search: true
+
+# Personality Data Structure
+personality_schema:
+  # Core personality dimensions
+  big_five:
+    - openness
+    - conscientiousness
+    - extraversion
+    - agreeableness
+    - neuroticism
+  
+  # Values and beliefs
+  values:
+    - family_importance
+    - career_ambition
+    - financial_security
+    - adventure_seeking
+    - social_connection
+    - personal_growth
+    - tradition_respect
+    - independence
+  
+  # Communication and conflict styles
+  styles:
+    - communication_directness
+    - conflict_avoidance
+    - emotional_expression
+    - decision_making_speed
+    - planning_preference
+
+# Search Configuration
+search:
+  # Enable different search methods
+  semantic_search: true
+  keyword_search: true
+  
+  # Boost factors for different types of content
+  boost_factors:
+    recent_memories: 1.2
+    personality_traits: 1.5
+    values: 1.3
+    preferences: 1.0
+
+# Performance Settings
+performance:
+  # Batch size for bulk operations
+  batch_size: 100
+  
+  # Connection pool settings
+  max_connections: 10
+  connection_timeout: 30
+  
+  # Cache settings
+  enable_cache: true
+  cache_ttl: 3600  # 1 hour
