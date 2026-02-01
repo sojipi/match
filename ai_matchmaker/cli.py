@@ -28,7 +28,7 @@ def check_configuration():
         config = get_config()
         
         # Check for required API keys
-        if not config.api.gemini_api_key:
+        if not config.gemini_api_key:
             raise ConfigurationError(
                 "Gemini API key not found. Please set GEMINI_API_KEY environment variable."
             )
@@ -56,9 +56,9 @@ def cmd_config(args):
     print(f"  Environment: {config.environment}")
     print(f"  Log Level: {config.log_level}")
     print(f"  Debug Mode: {config.debug}")
-    print(f"  Default Language: {config.localization.default_language}")
-    print(f"  Supported Languages: {', '.join(config.localization.supported_languages_list)}")
-    print(f"  Database Path: {config.database.chroma_db_path}")
+    print(f"  Default Language: {config.default_language}")
+    print(f"  Supported Languages: {', '.join(config.supported_languages_list)}")
+    print(f"  Database Path: {config.chroma_db_path}")
 
 
 def cmd_train(args):

@@ -34,6 +34,8 @@ def test_config_import():
     assert config is not None
     assert hasattr(config, 'environment')
     assert hasattr(config, 'log_level')
+    assert hasattr(config, 'gemini_api_key')
+    assert hasattr(config, 'chroma_db_path')
 
 
 def test_logging_import():

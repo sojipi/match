@@ -2,127 +2,163 @@
 
 ## Introduction
 
-This document specifies the requirements for an AI-powered matchmaking application that uses AI agents to simulate users for initial dating interactions and marriage life simulation. The system leverages AgentScope framework to create digital avatars that represent users in three distinct phases: training, matchmaking, and simulation.
+This document specifies the requirements for an AI-powered matchmaking web platform that uses AI agents to simulate users for dating compatibility assessment. The system is a modern social platform where users create profiles, undergo AI-driven personality assessment, and watch their AI avatars interact with potential matches in real-time conversations and life simulations.
 
 ## Glossary
 
-- **AI_Agent**: An artificial intelligence agent that represents a user's personality and preferences
-- **Digital_Avatar**: The AI representation of a user created through training interactions
-- **Training_Phase**: The initial phase where users interact with their AI agent to build their digital profile
-- **Matchmaking_Phase**: The phase where two AI agents representing different users interact to assess compatibility
-- **Simulation_Phase**: The phase where AI agents simulate married life scenarios to test compatibility
-- **MatchMaker_Agent**: A specialized AI agent that facilitates and guides the matchmaking process
-- **Scenario_Generator**: An AI agent that creates realistic life scenarios for simulation testing
-- **Long_Term_Memory**: The persistent storage system that maintains user personality and preference data
-- **System**: The overall AI matchmaking application
+- **Web_Platform**: The complete web-based matchmaking application with frontend and backend
+- **User_Profile**: Complete user account including personal info, photos, and AI personality data
+- **AI_Avatar**: The AI representation of a user created through personality assessment
+- **Personality_Assessment**: Interactive web-based questionnaire to build user's AI personality
+- **Live_Matching**: Real-time AI agent conversations that users can observe via web interface
+- **Compatibility_Dashboard**: Web interface showing match results, compatibility scores, and insights
+- **Social_Features**: User interactions including likes, messages, match history, and social discovery
+- **Simulation_Theater**: Web interface for watching AI agents simulate relationship scenarios
+- **Match_History**: User's complete dating and compatibility history within the platform
+- **System**: The complete web platform including frontend, backend, and AI services
 
 ## Requirements
 
-### Requirement 1: User Profile Training
+### Requirement 1: User Account Management and Authentication
 
-**User Story:** As a user, I want to train my AI agent to accurately represent my personality and preferences, so that it can effectively represent me in matchmaking scenarios.
-
-#### Acceptance Criteria
-
-1. WHEN a user starts the training phase, THE System SHALL create a dedicated AI agent for that user
-2. WHEN the training agent asks questions, THE System SHALL store responses in long-term memory
-3. WHEN key personality information is identified, THE System SHALL automatically record it to the user's profile
-4. THE Training_Agent SHALL ask questions covering personality, values, lifestyle habits, and partner preferences
-5. WHEN training is complete, THE System SHALL validate that sufficient profile data has been collected
-
-### Requirement 2: AI Agent Matchmaking
-
-**User Story:** As a user, I want my AI agent to interact with other users' AI agents, so that I can assess compatibility without initial direct contact.
+**User Story:** As a user, I want to create and manage my account on the web platform, so that I can access personalized matchmaking services and maintain my dating profile.
 
 #### Acceptance Criteria
 
-1. WHEN two users are matched for interaction, THE System SHALL create a controlled conversation environment
-2. WHEN agents interact, THE System SHALL retrieve relevant personality data from long-term memory
-3. THE MatchMaker_Agent SHALL facilitate introductions and guide conversation topics
-4. WHEN agents respond to questions, THE System SHALL base responses on stored user personality data
-5. WHEN the matchmaking session ends, THE System SHALL generate a compatibility report
+1. WHEN a user visits the registration page, THE System SHALL provide secure account creation with email verification
+2. WHEN a user logs in, THE System SHALL authenticate credentials and establish a secure session
+3. WHEN a user updates their profile, THE System SHALL save changes and update their AI avatar accordingly
+4. THE System SHALL support social login options (Google, Facebook) for convenient access
+5. WHEN a user requests password reset, THE System SHALL send secure reset links via email
 
-### Requirement 3: Marriage Life Simulation
+### Requirement 2: Interactive Personality Assessment
 
-**User Story:** As a user, I want my AI agent to participate in realistic marriage scenarios with potential matches, so that I can evaluate long-term compatibility.
-
-#### Acceptance Criteria
-
-1. WHEN simulation phase begins, THE Scenario_Generator SHALL create realistic marriage conflict scenarios
-2. WHEN scenarios are presented, THE AI_Agent SHALL respond based on user personality traits
-3. THE System SHALL present scenarios including financial decisions, family conflicts, and parenting challenges
-4. WHEN agents interact in scenarios, THE System SHALL maintain character consistency with user profiles
-5. WHEN simulation completes, THE System SHALL provide compatibility scoring based on agent interactions
-
-### Requirement 4: Memory Management
-
-**User Story:** As a system administrator, I want reliable long-term memory storage for user profiles, so that AI agents can maintain consistent personality representation.
+**User Story:** As a user, I want to complete an engaging web-based personality assessment, so that my AI avatar accurately represents my personality and preferences.
 
 #### Acceptance Criteria
 
-1. WHEN personality data is collected, THE System SHALL store it in structured long-term memory
-2. WHEN agents need personality information, THE System SHALL retrieve relevant data accurately
-3. THE System SHALL support both keyword and semantic search for memory retrieval
-4. WHEN memory is accessed, THE System SHALL return contextually relevant personality traits
-5. THE System SHALL maintain data persistence across multiple sessions
+1. WHEN a user starts personality assessment, THE System SHALL present an interactive web questionnaire
+2. WHEN users answer questions, THE System SHALL provide real-time progress indicators and engaging UI
+3. THE System SHALL adapt questions dynamically based on previous responses for personalized assessment
+4. WHEN assessment is complete, THE System SHALL generate a comprehensive personality profile
+5. WHEN users want to review results, THE System SHALL display personality insights in an attractive dashboard
 
-### Requirement 5: Multi-Agent Coordination
+### Requirement 3: AI Avatar Creation and Management
 
-**User Story:** As a system architect, I want proper coordination between different AI agents, so that the matchmaking process flows smoothly.
-
-#### Acceptance Criteria
-
-1. WHEN multiple agents interact, THE System SHALL manage conversation flow and turn-taking
-2. THE MatchMaker_Agent SHALL control conversation progression and prevent infinite loops
-3. WHEN conflicts arise in simulation, THE System SHALL allow agents to express disagreement authentically
-4. THE System SHALL enforce maximum conversation limits to prevent endless discussions
-5. WHEN sessions end, THE System SHALL properly terminate all agent interactions
-
-### Requirement 6: Personality Authenticity
-
-**User Story:** As a user, I want my AI agent to represent my authentic personality including flaws and preferences, so that matches are based on realistic compatibility.
+**User Story:** As a user, I want to see and customize my AI avatar, so that I can ensure it represents me authentically in matchmaking scenarios.
 
 #### Acceptance Criteria
 
-1. WHEN agents interact, THE System SHALL prioritize user personality over generic politeness
-2. THE AI_Agent SHALL express disagreement when user values conflict with scenarios
-3. WHEN controversial topics arise, THE System SHALL allow authentic responses based on user beliefs
-4. THE System SHALL prevent agents from being artificially agreeable or conflict-avoidant
-5. WHEN personality conflicts occur, THE System SHALL record these as compatibility data points
+1. WHEN personality assessment completes, THE System SHALL create a detailed AI avatar profile
+2. WHEN users view their avatar, THE System SHALL display personality traits, values, and communication style
+3. THE System SHALL allow users to review and adjust their avatar's characteristics through web interface
+4. WHEN avatar updates are made, THE System SHALL retrain the AI model with new personality data
+5. THE System SHALL provide avatar completeness scores and suggestions for improvement
 
-### Requirement 7: Scenario Generation and Management
+### Requirement 4: Social Discovery and Browsing
 
-**User Story:** As a system designer, I want diverse and realistic marriage scenarios, so that compatibility testing covers various life situations.
-
-#### Acceptance Criteria
-
-1. THE Scenario_Generator SHALL create scenarios covering financial stress, family conflicts, and parenting decisions
-2. WHEN scenarios are generated, THE System SHALL ensure they are contextually appropriate for the user profiles
-3. THE System SHALL maintain a library of at least 10 distinct scenario templates
-4. WHEN scenarios are presented, THE System SHALL provide sufficient context for meaningful responses
-5. THE System SHALL vary scenario difficulty and emotional intensity across sessions
-
-### Requirement 8: Compatibility Assessment
-
-**User Story:** As a user, I want detailed compatibility reports based on AI agent interactions, so that I can make informed decisions about potential matches.
+**User Story:** As a user, I want to browse and discover potential matches on the platform, so that I can find compatible partners and initiate AI matchmaking sessions.
 
 #### Acceptance Criteria
 
-1. WHEN matchmaking sessions complete, THE System SHALL generate quantitative compatibility scores
-2. THE System SHALL analyze communication patterns, conflict resolution styles, and value alignment
-3. WHEN simulation scenarios complete, THE System SHALL evaluate collaborative problem-solving effectiveness
-4. THE System SHALL provide specific examples from interactions to support compatibility assessments
-5. THE System SHALL present results in an understandable format with actionable insights
+1. WHEN users access the discovery page, THE System SHALL display potential matches with photos and basic info
+2. WHEN users filter matches, THE System SHALL apply preferences for age, location, interests, and compatibility
+3. THE System SHALL provide swipe-style interface for expressing interest in potential matches
+4. WHEN mutual interest occurs, THE System SHALL notify both users and enable AI matchmaking
+5. THE System SHALL recommend matches based on personality compatibility and user preferences
 
-### Requirement 9: Internationalization and Multi-Language Support
+### Requirement 5: Live AI Matchmaking Theater
 
-**User Story:** As a user from any cultural background, I want to use the application in my native language with culturally appropriate content, so that I can have an authentic and comfortable experience.
+**User Story:** As a user, I want to watch my AI avatar interact with potential matches in real-time, so that I can observe compatibility and communication dynamics.
 
 #### Acceptance Criteria
 
-1. THE System SHALL support multiple languages for user interface and agent interactions
-2. WHEN users select a language, THE System SHALL translate all agent prompts and responses appropriately
-3. THE System SHALL adapt personality assessment questions for cultural appropriateness while maintaining psychological validity
-4. WHEN generating scenarios, THE System SHALL consider cultural context and family dynamics
-5. THE System SHALL evaluate cross-cultural compatibility when users from different backgrounds are matched
-6. THE System SHALL provide culturally sensitive compatibility reports and recommendations
+1. WHEN users initiate a match, THE System SHALL create a live conversation session between AI avatars
+2. WHEN AI agents interact, THE System SHALL display the conversation in real-time via web interface
+3. THE System SHALL provide theater-style viewing with conversation bubbles, avatars, and interaction controls
+4. WHEN conversations develop, THE System SHALL allow users to provide feedback and guidance to their avatars
+5. WHEN sessions end, THE System SHALL generate compatibility scores and conversation summaries
+
+### Requirement 6: Relationship Simulation Scenarios
+
+**User Story:** As a user, I want to watch my AI avatar and matches navigate realistic relationship scenarios, so that I can assess long-term compatibility.
+
+#### Acceptance Criteria
+
+1. WHEN users request simulation, THE System SHALL present AI avatars with realistic relationship challenges
+2. WHEN scenarios unfold, THE System SHALL display interactions through engaging web interface with scenario context
+3. THE System SHALL include financial decisions, family conflicts, parenting discussions, and lifestyle choices
+4. WHEN avatars respond to scenarios, THE System SHALL maintain authentic personality representation
+5. WHEN simulations complete, THE System SHALL provide detailed compatibility analysis and insights
+
+### Requirement 7: Compatibility Dashboard and Reports
+
+**User Story:** As a user, I want to view detailed compatibility reports and insights, so that I can make informed decisions about potential relationships.
+
+#### Acceptance Criteria
+
+1. WHEN matchmaking sessions complete, THE System SHALL generate comprehensive compatibility dashboards
+2. WHEN users view reports, THE System SHALL display compatibility scores, communication patterns, and conflict areas
+3. THE System SHALL provide interactive charts and visualizations for easy understanding of compatibility data
+4. WHEN multiple sessions occur, THE System SHALL track compatibility trends and improvement suggestions
+5. THE System SHALL offer downloadable reports and shareable compatibility summaries
+
+### Requirement 8: Social Features and Match History
+
+**User Story:** As a user, I want to manage my matches, view history, and interact socially on the platform, so that I can build meaningful connections.
+
+#### Acceptance Criteria
+
+1. WHEN users access their profile, THE System SHALL display complete match history with compatibility scores
+2. WHEN users like or message matches, THE System SHALL facilitate social interactions and notifications
+3. THE System SHALL provide match favorites, blocking, and reporting functionality for user safety
+4. WHEN users want to reconnect, THE System SHALL maintain conversation history and previous compatibility data
+5. THE System SHALL offer social features like profile views, mutual connections, and activity feeds
+
+### Requirement 9: Real-time Notifications and Updates
+
+**User Story:** As a user, I want to receive real-time notifications about matches, messages, and AI interactions, so that I stay engaged with the platform.
+
+#### Acceptance Criteria
+
+1. WHEN new matches occur, THE System SHALL send instant notifications via web and email
+2. WHEN AI sessions start, THE System SHALL notify users with links to live viewing interfaces
+3. THE System SHALL provide real-time updates during AI conversations and simulations
+4. WHEN compatibility reports are ready, THE System SHALL alert users with dashboard notifications
+5. THE System SHALL allow users to customize notification preferences and delivery methods
+
+### Requirement 10: Mobile-Responsive Web Design
+
+**User Story:** As a user, I want to access the platform seamlessly on any device, so that I can use matchmaking services anywhere.
+
+#### Acceptance Criteria
+
+1. WHEN users access the platform on mobile devices, THE System SHALL provide fully responsive design
+2. WHEN viewing AI conversations on mobile, THE System SHALL optimize chat interfaces for touch interaction
+3. THE System SHALL maintain full functionality across desktop, tablet, and mobile browsers
+4. WHEN users switch devices, THE System SHALL synchronize data and maintain session continuity
+5. THE System SHALL provide progressive web app features for mobile installation and offline access
+
+### Requirement 11: Privacy and Data Security
+
+**User Story:** As a user, I want my personal data and AI interactions to be secure and private, so that I can trust the platform with sensitive information.
+
+#### Acceptance Criteria
+
+1. WHEN users create accounts, THE System SHALL encrypt all personal data and personality information
+2. WHEN AI sessions occur, THE System SHALL ensure conversation privacy and secure data transmission
+3. THE System SHALL provide granular privacy controls for profile visibility and data sharing
+4. WHEN users delete accounts, THE System SHALL completely remove personal data and AI models
+5. THE System SHALL comply with GDPR, CCPA, and other privacy regulations for user protection
+
+### Requirement 12: Multi-language and Cultural Support
+
+**User Story:** As a user from any cultural background, I want to use the platform in my native language with culturally appropriate content, so that I have an authentic experience.
+
+#### Acceptance Criteria
+
+1. THE System SHALL support multiple languages for complete user interface and AI interactions
+2. WHEN users select languages, THE System SHALL translate all content while maintaining cultural context
+3. THE System SHALL adapt personality assessments and scenarios for different cultural backgrounds
+4. WHEN cross-cultural matches occur, THE System SHALL provide cultural compatibility insights
+5. THE System SHALL offer localized dating customs and relationship scenario adaptations

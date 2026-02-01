@@ -1,10 +1,10 @@
-# Design Document: AI Matchmaker Application
+# Design Document: AI Matchmaker Web Platform
 
 ## Overview
 
-The AI Matchmaker application is a sophisticated multi-agent system built on the AgentScope framework that facilitates AI-powered matchmaking through three distinct phases: training, matchmaking, and simulation. The system creates digital avatars of users through conversational training, enables these avatars to interact for compatibility assessment, and simulates realistic marriage scenarios to evaluate long-term compatibility.
+The AI Matchmaker Web Platform is a modern, social matchmaking application that combines AI-powered personality assessment with real-time agent interactions. Users create profiles, complete interactive personality assessments, and watch their AI avatars engage with potential matches through live conversations and relationship simulations. The platform provides a comprehensive social experience with match discovery, compatibility dashboards, and detailed relationship insights.
 
-The application leverages Google's Gemini API for natural language processing, AgentScope's MsgHub for multi-agent orchestration, and Mem0/ReMe for persistent memory management. The system supports internationalization with multi-language capabilities to serve users globally. The design prioritizes authentic personality representation over artificial politeness to ensure realistic compatibility assessments.
+The system uses a modern web architecture with React frontend, FastAPI backend, PostgreSQL database, and real-time WebSocket communications. AI agents are powered by Google's Gemini API and AgentScope framework, with Mem0 providing advanced memory management for personality data. The platform supports multi-language localization and cultural adaptation for global users.
 
 ## Architecture
 
@@ -12,19 +12,28 @@ The application leverages Google's Gemini API for natural language processing, A
 
 ```mermaid
 graph TB
-    subgraph "User Interface Layer"
-        UI[User Interface]
-        CLI[Command Line Interface]
+    subgraph "Frontend Layer"
+        WEB[React Web App]
+        PWA[Progressive Web App]
+        MOBILE[Mobile Responsive UI]
     end
     
-    subgraph "Application Layer"
-        TC[Training Controller]
-        MC[Matchmaking Controller]
-        SC[Simulation Controller]
-        RC[Report Controller]
+    subgraph "API Gateway Layer"
+        NGINX[Nginx Load Balancer]
+        API[FastAPI Backend]
+        WS[WebSocket Server]
+        AUTH[Authentication Service]
     end
     
-    subgraph "Agent Layer"
+    subgraph "Application Services"
+        USER[User Service]
+        MATCH[Matching Service]
+        AI[AI Agent Service]
+        NOTIF[Notification Service]
+        UPLOAD[File Upload Service]
+    end
+    
+    subgraph "AI Agent Layer"
         TA[Training Agent]
         MA[MatchMaker Agent]
         UA1[User Avatar 1]
@@ -33,49 +42,48 @@ graph TB
         EA[Evaluator Agent]
     end
     
-    subgraph "Communication Layer"
-        MH[MsgHub]
-        MM[Message Manager]
-    end
-    
-    subgraph "Memory Layer"
-        LTM[Long Term Memory]
-        STM[Short Term Memory]
-        PS[Profile Storage]
+    subgraph "Data Layer"
+        POSTGRES[PostgreSQL Database]
+        REDIS[Redis Cache]
+        VECTOR[Vector Database]
+        FILES[File Storage]
     end
     
     subgraph "External Services"
         GEMINI[Gemini API]
-        VDB[Vector Database]
-        I18N[Internationalization Service]
-        TRANS[Translation Service]
+        EMAIL[Email Service]
+        PUSH[Push Notifications]
+        CDN[Content Delivery Network]
     end
     
-    UI --> TC
-    UI --> MC
-    UI --> SC
-    UI --> RC
+    WEB --> NGINX
+    PWA --> NGINX
+    MOBILE --> NGINX
     
-    TC --> TA
-    MC --> MA
-    MC --> UA1
-    MC --> UA2
-    SC --> SG
-    SC --> EA
+    NGINX --> API
+    NGINX --> WS
     
-    TA --> MH
-    MA --> MH
-    UA1 --> MH
-    UA2 --> MH
-    SG --> MH
-    EA --> MH
+    API --> AUTH
+    API --> USER
+    API --> MATCH
+    API --> AI
+    API --> NOTIF
+    API --> UPLOAD
     
-    MH --> MM
-    MM --> LTM
-    MM --> STM
+    WS --> AI
+    WS --> NOTIF
     
-    LTM --> PS
-    PS --> VDB
+    USER --> POSTGRES
+    MATCH --> POSTGRES
+    AI --> VECTOR
+    NOTIF --> REDIS
+    
+    AI --> TA
+    AI --> MA
+    AI --> UA1
+    AI --> UA2
+    AI --> SG
+    AI --> EA
     
     TA --> GEMINI
     MA --> GEMINI
@@ -84,248 +92,584 @@ graph TB
     SG --> GEMINI
     EA --> GEMINI
     
-    UI --> I18N
-    I18N --> TRANS
+    UPLOAD --> FILES
+    NOTIF --> EMAIL
+    NOTIF --> PUSH
+    FILES --> CDN
 ```
 
 ### Component Architecture
 
-The system follows a layered architecture with clear separation of concerns:
+The system follows a modern microservices architecture optimized for web applications:
 
-1. **User Interface Layer**: Handles user interactions and displays results
-2. **Application Layer**: Manages business logic and orchestrates workflows
-3. **Agent Layer**: Contains specialized AI agents for different functions
-4. **Communication Layer**: Manages message passing between agents
-5. **Memory Layer**: Handles persistent and temporary data storage
-6. **External Services**: Integrates with third-party APIs and databases
+1. **Frontend Layer**: React-based single-page application with PWA capabilities
+2. **API Gateway Layer**: FastAPI backend with WebSocket support for real-time features
+3. **Application Services**: Microservices for user management, matching, AI coordination
+4. **AI Agent Layer**: Specialized AI agents for personality assessment and matchmaking
+5. **Data Layer**: PostgreSQL for relational data, Vector DB for AI embeddings, Redis for caching
+6. **External Services**: Third-party integrations for AI, notifications, and content delivery
 
 ## Components and Interfaces
 
-### Core Agent Classes
+### Frontend Components
 
-#### TrainingAgent
-```python
-class TrainingAgent(ReActAgent):
-    """
-    Specialized agent for conducting user personality interviews.
-    Inherits from ReActAgent to support tool usage for memory recording.
-    """
-    
-    def __init__(self, user_id: str, long_term_memory: LongTermMemory):
-        # Configuration for interview-style interactions
-        # Tool access for memory recording
-        # Personality assessment question templates
-    
-    def conduct_interview(self) -> InterviewResult:
-        # Progressive questioning strategy
-        # Dynamic follow-up based on responses
-        # Automatic memory recording of key insights
-    
-    def validate_profile_completeness(self) -> bool:
-        # Check if sufficient personality data collected
-        # Validate coverage of key personality dimensions
+#### React Application Structure
+```typescript
+// Main App Component
+interface AppProps {
+  user: User | null;
+  theme: 'light' | 'dark';
+}
+
+const App: React.FC<AppProps> = ({ user, theme }) => {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/onboarding" element={<PersonalityAssessment />} />
+        <Route path="/dashboard" element={<UserDashboard />} />
+        <Route path="/discover" element={<MatchDiscovery />} />
+        <Route path="/theater/:sessionId" element={<LiveMatchingTheater />} />
+        <Route path="/compatibility/:matchId" element={<CompatibilityReport />} />
+        <Route path="/profile" element={<UserProfile />} />
+      </Routes>
+    </Router>
+  );
+};
 ```
 
-#### UserAvatar
-```python
-class UserAvatar(DialogAgent):
-    """
-    Digital representation of a user based on trained personality data.
-    Retrieves and applies personality traits in conversations.
-    """
-    
-    def __init__(self, user_id: str, personality_profile: PersonalityProfile):
-        # Load personality data from long-term memory
-        # Configure response style based on user traits
-        # Set authenticity parameters
-    
-    def respond_authentically(self, message: Msg) -> Msg:
-        # Retrieve relevant personality traits
-        # Generate response consistent with user values
-        # Avoid artificial politeness when conflicts arise
-    
-    def handle_conflict(self, scenario: Scenario) -> Response:
-        # Express disagreement when values conflict
-        # Maintain character consistency under pressure
+#### Key Frontend Components
+
+##### PersonalityAssessment
+```typescript
+interface PersonalityAssessmentProps {
+  onComplete: (profile: PersonalityProfile) => void;
+  currentStep: number;
+  totalSteps: number;
+}
+
+const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
+  onComplete,
+  currentStep,
+  totalSteps
+}) => {
+  // Interactive questionnaire with progress tracking
+  // Dynamic question adaptation based on responses
+  // Real-time personality insights preview
+  // Engaging UI with animations and feedback
+};
 ```
 
-#### MatchMakerAgent
-```python
-class MatchMakerAgent(DialogAgent):
-    """
-    Facilitates conversations between user avatars.
-    Manages conversation flow and prevents infinite loops.
-    """
-    
-    def __init__(self):
-        # Conversation management templates
-        # Topic progression strategies
-        # Conflict resolution approaches
-    
-    def facilitate_introduction(self, avatar1: UserAvatar, avatar2: UserAvatar):
-        # Guide initial introductions
-        # Suggest conversation topics
-        # Monitor interaction quality
-    
-    def manage_conversation_flow(self, max_turns: int = 20):
-        # Enforce turn limits
-        # Redirect stalled conversations
-        # Summarize key compatibility points
+##### LiveMatchingTheater
+```typescript
+interface LiveMatchingTheaterProps {
+  sessionId: string;
+  userAvatar: UserAvatar;
+  matchAvatar: UserAvatar;
+}
+
+const LiveMatchingTheater: React.FC<LiveMatchingTheaterProps> = ({
+  sessionId,
+  userAvatar,
+  matchAvatar
+}) => {
+  // Real-time conversation display
+  // Avatar animations and expressions
+  // User interaction controls (guidance, feedback)
+  // Compatibility metrics live updates
+  // WebSocket connection for real-time updates
+};
 ```
 
-#### ScenarioGenerator
-```python
-class ScenarioGenerator(ReActAgent):
-    """
-    Creates realistic marriage scenarios for compatibility testing.
-    Adapts scenario difficulty based on user profiles.
-    """
-    
-    def __init__(self, scenario_library: ScenarioLibrary):
-        # Load predefined scenario templates
-        # Configure difficulty scaling
-        # Set contextual adaptation rules
-    
-    def generate_scenario(self, profiles: List[PersonalityProfile]) -> Scenario:
-        # Select appropriate scenario type
-        # Customize details for user contexts
-        # Ensure realistic challenge level
-    
-    def create_financial_scenario(self) -> FinancialScenario:
-        # Budget conflicts, major purchases, debt management
-    
-    def create_family_scenario(self) -> FamilyScenario:
-        # In-law conflicts, parenting decisions, household roles
+##### CompatibilityDashboard
+```typescript
+interface CompatibilityDashboardProps {
+  matchId: string;
+  compatibilityData: CompatibilityReport;
+  interactionHistory: ConversationSession[];
+}
+
+const CompatibilityDashboard: React.FC<CompatibilityDashboardProps> = ({
+  matchId,
+  compatibilityData,
+  interactionHistory
+}) => {
+  // Interactive compatibility charts
+  // Detailed analysis breakdowns
+  // Conversation highlights and insights
+  // Actionable recommendations
+  // Social sharing capabilities
+};
 ```
 
-### Memory Management System
+### Backend API Services
 
-#### PersonalityProfile
+#### User Service
 ```python
-class PersonalityProfile:
+class UserService:
     """
-    Structured representation of user personality and preferences.
+    Manages user accounts, profiles, and authentication.
+    Handles user registration, login, profile updates, and preferences.
     """
     
-    def __init__(self):
-        self.values: Dict[str, float]  # Core values with strength ratings
-        self.preferences: Dict[str, Any]  # Lifestyle preferences
-        self.communication_style: CommunicationStyle
-        self.conflict_resolution: ConflictStyle
-        self.life_goals: List[LifeGoal]
-        self.deal_breakers: List[str]
+    async def create_user(self, user_data: UserRegistration) -> User:
+        # Create new user account with email verification
+        # Initialize empty personality profile
+        # Set up default preferences and privacy settings
     
-    def get_relevant_traits(self, context: str) -> Dict[str, Any]:
-        # Retrieve personality aspects relevant to specific contexts
-        # Support both keyword and semantic search
+    async def authenticate_user(self, credentials: LoginCredentials) -> AuthToken:
+        # Validate user credentials
+        # Generate JWT tokens for session management
+        # Update last login and activity tracking
     
-    def calculate_compatibility(self, other: 'PersonalityProfile') -> CompatibilityScore:
-        # Compare values, preferences, and communication styles
-        # Identify potential conflict areas
-        # Generate compatibility metrics
+    async def update_profile(self, user_id: str, profile_data: ProfileUpdate) -> User:
+        # Update user profile information
+        # Trigger AI avatar retraining if personality data changed
+        # Notify matching service of profile updates
+    
+    async def get_user_dashboard(self, user_id: str) -> DashboardData:
+        # Aggregate user's matches, conversations, and reports
+        # Calculate profile completeness and suggestions
+        # Return personalized dashboard content
 ```
 
-#### LongTermMemoryManager
+#### Matching Service
 ```python
-class LongTermMemoryManager:
+class MatchingService:
     """
-    Manages persistent storage and retrieval of personality data.
-    Integrates with Mem0 for advanced memory capabilities.
+    Handles match discovery, compatibility calculation, and match management.
+    Coordinates with AI agents for personality-based matching.
     """
     
-    def __init__(self, vector_db_config: VectorDBConfig):
-        # Initialize Mem0 connection
-        # Configure embedding models
-        # Set up hybrid search capabilities
+    async def discover_matches(self, user_id: str, filters: MatchFilters) -> List[PotentialMatch]:
+        # Apply user preferences and filters
+        # Calculate personality compatibility scores
+        # Return ranked list of potential matches
     
-    def store_personality_data(self, user_id: str, data: PersonalityData):
-        # Structure and store personality information
-        # Create semantic embeddings
-        # Maintain data relationships
+    async def create_match_session(self, user1_id: str, user2_id: str) -> MatchSession:
+        # Initialize AI avatars for both users
+        # Create live conversation environment
+        # Set up WebSocket channels for real-time updates
     
-    def retrieve_contextual_memories(self, user_id: str, context: str) -> List[Memory]:
-        # Hybrid search combining keywords and semantics
-        # Rank results by relevance
-        # Return structured memory objects
+    async def process_user_interaction(self, session_id: str, interaction: UserInteraction):
+        # Handle user likes, passes, and feedback
+        # Update match status and notifications
+        # Trigger compatibility analysis if mutual interest
 ```
 
-### Internationalization and Localization
-
-#### LocalizationManager
+#### AI Agent Service
 ```python
-class LocalizationManager:
+class AIAgentService:
     """
-    Manages multi-language support and cultural adaptation.
-    Handles translation of agent prompts, UI text, and cultural context.
-    """
-    
-    def __init__(self, supported_languages: List[str]):
-        # Initialize translation services
-        # Load cultural context databases
-        # Configure language-specific personality models
-    
-    def translate_agent_prompt(self, prompt: str, target_language: str) -> str:
-        # Translate system prompts while preserving meaning
-        # Adapt cultural references and examples
-        # Maintain personality assessment validity
-    
-    def adapt_scenarios_for_culture(self, scenario: Scenario, culture: str) -> Scenario:
-        # Modify scenarios for cultural appropriateness
-        # Adjust family dynamics and social expectations
-        # Ensure realistic cultural context
-    
-    def get_localized_personality_questions(self, language: str) -> List[Question]:
-        # Return culturally appropriate personality assessment questions
-        # Maintain psychological validity across cultures
-        # Adapt communication styles and examples
-
-#### CulturalContextManager
-```python
-class CulturalContextManager:
-    """
-    Manages cultural adaptation of personality assessment and matching.
-    Ensures compatibility evaluation considers cultural differences.
+    Coordinates AI agents for personality assessment and matchmaking.
+    Manages agent lifecycle and conversation orchestration.
     """
     
-    def __init__(self):
-        # Load cultural dimension databases
-        # Initialize cultural compatibility models
-        # Set up cultural bias detection
+    async def create_user_avatar(self, user_id: str, personality_data: PersonalityProfile) -> UserAvatar:
+        # Initialize AI avatar with personality traits
+        # Configure response patterns and communication style
+        # Set up memory integration for contextual responses
     
-    def adapt_personality_model(self, culture: str) -> PersonalityModel:
-        # Adjust personality trait interpretations for culture
-        # Modify value system weightings
-        # Account for cultural communication styles
+    async def start_live_conversation(self, session_id: str, participants: List[UserAvatar]) -> ConversationManager:
+        # Create conversation environment with WebSocket broadcasting
+        # Initialize MatchMaker agent for conversation facilitation
+        # Set up real-time updates for frontend theater
     
-    def evaluate_cross_cultural_compatibility(self, profile1: PersonalityProfile, 
-                                            profile2: PersonalityProfile) -> CrossCulturalScore:
-        # Assess compatibility across cultural boundaries
-        # Identify potential cultural conflict areas
-        # Provide cultural adaptation recommendations
+    async def run_scenario_simulation(self, session_id: str, scenario: Scenario) -> SimulationResult:
+        # Present scenario to AI avatars
+        # Facilitate scenario-based interactions
+        # Analyze responses for compatibility insights
 ```
 
-### Communication Infrastructure
+### Real-time Communication
+
+#### WebSocket Manager
 ```python
-class MsgHubManager:
+class WebSocketManager:
     """
-    Manages multi-agent conversations using AgentScope's MsgHub.
-    Handles message routing and conversation state.
+    Manages real-time communication for live AI conversations.
+    Handles WebSocket connections and message broadcasting.
     """
     
-    async def create_matchmaking_session(self, participants: List[Agent]) -> MsgHub:
-        # Initialize conversation environment
-        # Set up message broadcasting
-        # Configure participant permissions
+    async def connect_user_to_session(self, user_id: str, session_id: str, websocket: WebSocket):
+        # Establish WebSocket connection for user
+        # Join user to conversation room
+        # Send initial session state and history
     
-    async def manage_conversation_flow(self, hub: MsgHub, max_duration: int):
-        # Monitor conversation progress
-        # Enforce time and turn limits
-        # Handle agent disconnections
+    async def broadcast_conversation_update(self, session_id: str, message: ConversationMessage):
+        # Send real-time message to all connected users
+        # Update conversation state in database
+        # Trigger compatibility analysis updates
     
-    def terminate_session(self, hub: MsgHub) -> ConversationSummary:
-        # Clean up resources
-        # Generate conversation summary
-        # Extract key interaction points
+    async def send_compatibility_update(self, session_id: str, compatibility_data: CompatibilityUpdate):
+        # Broadcast live compatibility scores
+        # Send interaction insights and highlights
+        # Update user dashboards in real-time
+```
+
+### Database Models
+
+#### User and Profile Models
+```python
+class User(BaseModel):
+    """Complete user account model for the web platform."""
+    
+    id: str = Field(primary_key=True)
+    email: str = Field(unique=True, index=True)
+    username: str = Field(unique=True, index=True)
+    password_hash: str
+    is_verified: bool = False
+    is_active: bool = True
+    
+    # Profile information
+    first_name: str
+    last_name: str
+    date_of_birth: date
+    gender: str
+    location: str
+    bio: Optional[str] = None
+    
+    # Platform settings
+    privacy_settings: Dict[str, Any] = Field(default_factory=dict)
+    notification_preferences: Dict[str, bool] = Field(default_factory=dict)
+    subscription_tier: str = "free"
+    
+    # Timestamps
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    last_active: Optional[datetime] = None
+
+class UserPhoto(BaseModel):
+    """User photo model for profile images."""
+    
+    id: str = Field(primary_key=True)
+    user_id: str = Field(foreign_key="user.id")
+    file_url: str
+    is_primary: bool = False
+    order_index: int = 0
+    uploaded_at: datetime = Field(default_factory=datetime.utcnow)
+
+class Match(BaseModel):
+    """Match relationship between two users."""
+    
+    id: str = Field(primary_key=True)
+    user1_id: str = Field(foreign_key="user.id")
+    user2_id: str = Field(foreign_key="user.id")
+    
+    # Match status
+    status: MatchStatus  # PENDING, MUTUAL, EXPIRED, BLOCKED
+    user1_interest: InterestLevel  # LIKE, PASS, SUPER_LIKE
+    user2_interest: Optional[InterestLevel] = None
+    
+    # Compatibility data
+    compatibility_score: Optional[float] = None
+    compatibility_report_id: Optional[str] = None
+    
+    # Interaction tracking
+    conversation_count: int = 0
+    simulation_count: int = 0
+    last_interaction: Optional[datetime] = None
+    
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+```
+
+### Frontend Technology Stack
+
+#### React Application
+- **Framework**: React 18 with TypeScript
+- **State Management**: Redux Toolkit + RTK Query
+- **Routing**: React Router v6
+- **UI Components**: Material-UI (MUI) or Chakra UI
+- **Real-time**: Socket.IO client for WebSocket connections
+- **Charts**: Recharts or Chart.js for compatibility visualizations
+- **Animations**: Framer Motion for smooth UI transitions
+- **PWA**: Workbox for progressive web app features
+
+#### Backend Technology Stack
+- **Framework**: FastAPI with Python 3.11+
+- **Database**: PostgreSQL 15+ with SQLAlchemy ORM
+- **Caching**: Redis for session management and real-time data
+- **Vector DB**: ChromaDB or Pinecone for AI embeddings
+- **Authentication**: JWT tokens with refresh token rotation
+- **File Storage**: AWS S3 or Google Cloud Storage for user photos
+- **WebSockets**: FastAPI WebSocket support with Socket.IO
+- **Background Tasks**: Celery with Redis broker
+
+## Data Models
+
+### Enhanced Web Platform Models
+
+#### User Profile Schema
+```python
+class UserProfile(BaseModel):
+    """Enhanced user profile for web platform."""
+    
+    # Basic Information
+    user_id: str
+    email: str
+    username: str
+    first_name: str
+    last_name: str
+    date_of_birth: date
+    gender: str
+    location: LocationData
+    bio: Optional[str] = None
+    
+    # Photos and Media
+    photos: List[UserPhoto] = Field(default_factory=list)
+    primary_photo_url: Optional[str] = None
+    
+    # Personality and Preferences
+    personality_profile: Optional[PersonalityProfile] = None
+    dating_preferences: DatingPreferences
+    
+    # Platform Data
+    verification_status: VerificationStatus
+    subscription_tier: SubscriptionTier
+    privacy_settings: PrivacySettings
+    
+    # Activity Tracking
+    profile_completeness: float = 0.0
+    last_active: datetime
+    join_date: datetime
+    total_matches: int = 0
+    successful_matches: int = 0
+
+class DatingPreferences(BaseModel):
+    """User's dating and matching preferences."""
+    
+    age_range: Tuple[int, int]
+    max_distance: int  # in kilometers
+    gender_preference: List[str]
+    relationship_goals: List[str]
+    lifestyle_preferences: Dict[str, Any]
+    deal_breakers: List[str]
+    importance_weights: Dict[str, float]  # Weight different compatibility factors
+
+class MatchSession(BaseModel):
+    """Live matching session between two users."""
+    
+    session_id: str
+    user1_id: str
+    user2_id: str
+    session_type: SessionType  # CONVERSATION, SIMULATION, SPEED_CHAT
+    
+    # Session State
+    status: SessionStatus  # WAITING, ACTIVE, COMPLETED, TERMINATED
+    start_time: datetime
+    end_time: Optional[datetime] = None
+    
+    # AI Agents
+    user1_avatar: UserAvatar
+    user2_avatar: UserAvatar
+    matchmaker_agent: MatchMakerAgent
+    
+    # Real-time Data
+    messages: List[ConversationMessage] = Field(default_factory=list)
+    live_compatibility_score: float = 0.0
+    viewer_count: int = 0
+    
+    # Results
+    final_compatibility_report: Optional[CompatibilityReport] = None
+    user_feedback: Dict[str, UserFeedback] = Field(default_factory=dict)
+
+class ConversationMessage(BaseModel):
+    """Real-time conversation message for web display."""
+    
+    message_id: str
+    session_id: str
+    sender_type: AgentType  # USER_AVATAR, MATCHMAKER_AGENT, SYSTEM
+    sender_name: str
+    content: str
+    timestamp: datetime
+    
+    # Web-specific fields
+    message_type: MessageType  # TEXT, EMOTION, ACTION, SYSTEM_NOTIFICATION
+    emotion_indicators: List[str] = Field(default_factory=list)
+    compatibility_impact: Optional[float] = None
+    is_highlighted: bool = False  # For important compatibility moments
+```
+
+### API Response Models
+
+#### Match Discovery Response
+```python
+class MatchDiscoveryResponse(BaseModel):
+    """Response for match discovery API."""
+    
+    matches: List[PotentialMatch]
+    total_count: int
+    has_more: bool
+    filters_applied: MatchFilters
+    recommendations: List[str]  # Personalized suggestions
+
+class PotentialMatch(BaseModel):
+    """Potential match data for discovery interface."""
+    
+    user_id: str
+    display_name: str
+    age: int
+    location: str
+    primary_photo_url: str
+    bio_preview: str  # First 100 characters
+    
+    # Compatibility Preview
+    compatibility_preview: float  # Quick compatibility estimate
+    shared_interests: List[str]
+    personality_highlights: List[str]
+    
+    # Interaction Data
+    mutual_connections: int
+    last_active: str  # Human-readable format
+    is_online: bool
+    response_rate: float  # How often they respond to matches
+
+class LiveSessionUpdate(BaseModel):
+    """Real-time update for live matching sessions."""
+    
+    session_id: str
+    update_type: UpdateType  # MESSAGE, COMPATIBILITY, STATUS, USER_JOIN
+    timestamp: datetime
+    
+    # Update Data
+    message: Optional[ConversationMessage] = None
+    compatibility_update: Optional[CompatibilityUpdate] = None
+    status_change: Optional[SessionStatus] = None
+    user_action: Optional[UserAction] = None
+
+class CompatibilityUpdate(BaseModel):
+    """Real-time compatibility score updates."""
+    
+    overall_score: float
+    dimension_scores: Dict[str, float]
+    trending_direction: str  # "improving", "declining", "stable"
+    key_insights: List[str]
+    conversation_highlights: List[ConversationHighlight]
+```
+
+## Error Handling
+
+### Web-Specific Error Management
+
+#### API Error Responses
+```python
+class APIError(BaseModel):
+    """Standardized API error response."""
+    
+    error_code: str
+    message: str
+    details: Optional[Dict[str, Any]] = None
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    request_id: str
+
+class ValidationError(APIError):
+    """Form validation errors for frontend."""
+    
+    field_errors: Dict[str, List[str]]
+    form_errors: List[str] = Field(default_factory=list)
+
+class AuthenticationError(APIError):
+    """Authentication and authorization errors."""
+    
+    error_type: str  # "invalid_credentials", "token_expired", "insufficient_permissions"
+    redirect_url: Optional[str] = None
+```
+
+#### Frontend Error Handling
+```typescript
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
+}
+
+class AppErrorBoundary extends React.Component<Props, ErrorBoundaryState> {
+  // Global error boundary for React application
+  // Graceful error display and reporting
+  // Automatic error recovery mechanisms
+}
+
+// API Error Handling
+const apiErrorHandler = (error: APIError) => {
+  switch (error.error_code) {
+    case 'AUTHENTICATION_REQUIRED':
+      // Redirect to login
+      break;
+    case 'PROFILE_INCOMPLETE':
+      // Redirect to onboarding
+      break;
+    case 'WEBSOCKET_CONNECTION_FAILED':
+      // Show connection retry UI
+      break;
+    default:
+      // Show generic error message
+  }
+};
+```
+
+## Testing Strategy
+
+### Web Application Testing
+
+#### Frontend Testing
+- **Unit Tests**: Jest + React Testing Library for component testing
+- **Integration Tests**: Cypress for end-to-end user workflows
+- **Visual Tests**: Storybook + Chromatic for UI component testing
+- **Performance Tests**: Lighthouse CI for web performance monitoring
+- **Accessibility Tests**: axe-core for WCAG compliance testing
+
+#### Backend Testing
+- **Unit Tests**: pytest for API endpoint and service testing
+- **Integration Tests**: TestClient for full API workflow testing
+- **Load Tests**: Locust for performance and scalability testing
+- **Security Tests**: OWASP ZAP for security vulnerability scanning
+
+#### Real-time Testing
+- **WebSocket Tests**: Custom test framework for real-time communication
+- **AI Agent Tests**: Mock AI responses for consistent testing
+- **Compatibility Tests**: Property-based testing for matching algorithms
+
+### Testing Configuration
+
+```python
+# Backend Test Configuration
+@pytest.fixture
+async def test_client():
+    """Test client for API testing."""
+    async with AsyncClient(app=app, base_url="http://test") as client:
+        yield client
+
+@pytest.fixture
+async def authenticated_user():
+    """Authenticated user for protected endpoint testing."""
+    user = await create_test_user()
+    token = generate_jwt_token(user.id)
+    return {"user": user, "token": token}
+
+# Frontend Test Configuration
+// React Testing Library setup
+const renderWithProviders = (
+  ui: React.ReactElement,
+  {
+    preloadedState = {},
+    store = setupStore(preloadedState),
+    ...renderOptions
+  } = {}
+) => {
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <Provider store={store}>
+      <BrowserRouter>
+        <ThemeProvider theme={theme}>
+          {children}
+        </ThemeProvider>
+      </BrowserRouter>
+    </Provider>
+  );
+  
+  return { store, ...render(ui, { wrapper: Wrapper, ...renderOptions }) };
+};
 ```
 
 ## Data Models
@@ -557,52 +901,36 @@ tests/
 
 *A property is a characteristic or behavior that should hold true across all valid executions of a system—essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
 
-Based on the prework analysis and property reflection, the following correctness properties ensure the AI Matchmaker system operates reliably across all scenarios:
+Based on the requirements analysis, the following correctness properties ensure the AI Matchmaker web platform operates reliably across all scenarios:
 
-### Property 1: Memory Round-Trip Consistency
-*For any* personality data collected during training, storing it in long-term memory and then retrieving it should return equivalent information that accurately represents the original user input.
-**Validates: Requirements 1.2, 1.3, 4.1, 4.2**
+### Property 1: User Data Persistence and Integrity
+*For any* user registration and profile data, storing it in the database and then retrieving it should return equivalent information that accurately represents the original user input, maintaining data integrity across all web sessions.
+**Validates: Requirements 1.1, 1.3, 11.1, 11.4**
 
-### Property 2: Agent Response Authenticity
-*For any* conversation scenario and user personality profile, agent responses should consistently reflect the stored personality traits rather than generic politeness, even when conflicts arise.
-**Validates: Requirements 2.4, 3.2, 3.4, 6.1, 6.2, 6.3, 6.4**
+### Property 2: Personality Assessment Completeness and Consistency
+*For any* personality assessment session, the system should collect sufficient data across all personality dimensions and generate consistent AI avatar profiles that accurately reflect user responses.
+**Validates: Requirements 2.1, 2.4, 2.5, 3.3, 3.4**
 
-### Property 3: Conversation Flow Management
-*For any* multi-agent conversation, the system should manage turn-taking, prevent infinite loops, and enforce conversation limits while maintaining natural interaction flow.
-**Validates: Requirements 5.1, 5.2, 5.4**
+### Property 3: Match Discovery Relevance and Fairness
+*For any* user's match discovery request with specified preferences, the system should return matches that meet the criteria and are ranked fairly based on compatibility algorithms without bias.
+**Validates: Requirements 4.2, 4.3, 4.4, 8.1**
 
-### Property 4: Memory Retrieval Relevance
-*For any* memory query with contextual information, the system should return personality traits that are semantically and contextually relevant to the query using both keyword and semantic search.
-**Validates: Requirements 4.2, 4.3, 4.4**
+### Property 4: Real-time Message Delivery and Synchronization
+*For any* live AI matching session, all WebSocket messages should be delivered to connected users in real-time with proper ordering and synchronization across all client connections.
+**Validates: Requirements 5.3, 9.2, 9.3**
 
-### Property 5: Scenario Contextual Appropriateness
-*For any* user profile combination, generated scenarios should be contextually appropriate for the users' backgrounds and provide sufficient context for meaningful agent responses.
-**Validates: Requirements 3.1, 7.2, 7.4**
+### Property 5: AI Avatar Personality Consistency
+*For any* AI avatar conversation, responses should consistently reflect the user's stored personality traits and values, maintaining authentic representation even during conflicts or challenging scenarios.
+**Validates: Requirements 3.1, 3.4, 5.2, 6.1, 6.2**
 
-### Property 6: Data Persistence Across Sessions
-*For any* user profile data, information stored in one session should remain accessible and unchanged in subsequent sessions, maintaining consistency across the user's entire interaction history.
-**Validates: Requirements 4.5**
+### Property 6: Scenario Cultural and Contextual Appropriateness
+*For any* relationship simulation scenario generated for users from specific cultural backgrounds, the content should be culturally appropriate and contextually relevant to their profiles.
+**Validates: Requirements 6.2, 6.3, 12.3, 12.4**
 
 ### Property 7: Compatibility Assessment Comprehensiveness
-*For any* completed matchmaking and simulation session, the compatibility assessment should analyze all required dimensions (communication patterns, conflict resolution, value alignment, collaboration) and provide specific supporting examples.
-**Validates: Requirements 8.2, 8.3, 8.4, 8.5**
+*For any* completed AI matching session, the compatibility assessment should analyze all required dimensions (communication, values, conflict resolution) and provide specific supporting evidence from the interactions.
+**Validates: Requirements 7.1, 7.2, 7.3, 7.4**
 
-### Property 8: Conflict Recording and Analysis
-*For any* personality conflict that occurs during agent interactions, the system should accurately record the conflict details and incorporate them as meaningful data points in compatibility scoring.
-**Validates: Requirements 6.5**
-
-### Property 9: Scenario Difficulty Variation
-*For any* sequence of simulation sessions, scenario difficulty and emotional intensity should vary appropriately to provide comprehensive compatibility testing without overwhelming users.
-**Validates: Requirements 7.5**
-
-### Property 10: Profile Completeness Validation
-*For any* user profile, the training completion validation should accurately assess whether sufficient personality data has been collected across all required dimensions (personality, values, lifestyle, preferences).
-**Validates: Requirements 1.5**
-
-### Property 11: Cross-Cultural Translation Consistency
-*For any* agent prompt or user interface text, translation to different languages should preserve the original meaning and cultural appropriateness while maintaining the psychological validity of personality assessments.
-**Validates: Requirements 9.1, 9.2, 9.3**
-
-### Property 12: Cultural Context Adaptation
-*For any* scenario generation or compatibility assessment involving users from different cultural backgrounds, the system should appropriately adapt content and evaluation criteria to account for cultural differences while maintaining fairness.
-**Validates: Requirements 9.4, 9.5, 9.6**
+### Property 8: Cross-Cultural Content Appropriateness
+*For any* user interface content or AI interaction translated to different languages, the translation should preserve original meaning while adapting appropriately for cultural context and maintaining psychological assessment validity.
+**Validates: Requirements 12.2, 12.3, 12.4, 12.5**
