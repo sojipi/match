@@ -74,8 +74,7 @@ dev = [
     "pre-commit>=3.0.0",
 ]
 
-[project.scripts]
-ai-matchmaker = "ai_matchmaker.cli:main"
+# No CLI scripts for web application
 
 [tool.setuptools.packages.find]
 where = ["."]

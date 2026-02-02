@@ -10,7 +10,7 @@ import uvicorn
 from app.core.config import settings
 from app.core.database import init_db
 from app.api.v1.api import api_router
-from app.websocket.manager import websocket_router
+from app.websocket.manager import router as websocket_router
 
 
 @asynccontextmanager
@@ -34,7 +34,7 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_HOSTS,
+    allow_origins=settings.get_allowed_hosts(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

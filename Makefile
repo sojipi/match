@@ -7,6 +7,7 @@ help:
 	@echo "AI Matchmaker Development Commands:"
 	@echo ""
 	@echo "Setup Commands:"
+	@echo "  setup            Set up development environment (Windows: scripts/setup-dev.bat)"
 	@echo "  install          Install all dependencies (frontend + backend)"
 	@echo "  install-frontend Install frontend dependencies"
 	@echo "  install-backend  Install backend dependencies"
@@ -49,13 +50,16 @@ install-backend:
 	pip install -r requirements.txt
 
 # Development
-dev: docker-up
+dev: 
+	@echo "Starting local development servers..."
+	@echo "Use scripts/start-dev.bat on Windows"
+	@echo "Backend: http://localhost:8000, Frontend: http://localhost:3000"
 
 dev-local: 
 	@echo "Starting local development servers..."
-	@echo "Make sure PostgreSQL and Redis are running locally"
+	@echo "Make sure remote PostgreSQL and Redis are accessible"
 	@echo "Starting backend server..."
-	cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000 &
+	cd backend && py -m uvicorn main:app --reload --host 0.0.0.0 --port 8000 &
 	@echo "Starting frontend server..."
 	cd frontend && npm run dev
 
@@ -65,7 +69,7 @@ frontend-dev:
 
 backend-dev:
 	@echo "Starting backend development server..."
-	cd backend && uvicorn main:app --reload --host 0.0.0.0 --port 8000
+	cd backend && py -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 # Testing
 test: test-frontend test-backend
@@ -138,3 +142,9 @@ health:
 	@echo "Checking service health..."
 	@curl -f http://localhost:8000/health || echo "Backend not responding"
 	@curl -f http://localhost:3000 || echo "Frontend not responding"
+
+# Setup
+setup:
+	@echo "Setting up development environment..."
+	@echo "On Windows, run: scripts\\setup-dev.bat"
+	@echo "On Unix systems, ensure Python 3.11+ and Node.js 18+ are installed"

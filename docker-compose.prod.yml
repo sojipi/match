@@ -1,40 +1,4 @@
-version: '3.8'
-
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: ai-matchmaker-postgres-prod
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-ai_matchmaker}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data_prod:/var/lib/postgresql/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ai-matchmaker-network
-
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: ai-matchmaker-redis-prod
-    volumes:
-      - redis_data_prod:/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ai-matchmaker-network
-
   # Backend API
   backend:
     build:
@@ -42,8 +6,8 @@ services:
       dockerfile: backend/Dockerfile
     container_name: ai-matchmaker-backend-prod
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ai_matchmaker}
-      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
       - SECRET_KEY=${SECRET_KEY}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - DEBUG=false
@@ -51,11 +15,6 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - S3_BUCKET_NAME=${S3_BUCKET_NAME}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -92,10 +51,6 @@ services:
     restart: unless-stopped
     networks:
       - ai-matchmaker-network
-
-volumes:
-  postgres_data_prod:
-  redis_data_prod:
 
 networks:
   ai-matchmaker-network:

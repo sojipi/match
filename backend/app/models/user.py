@@ -1,8 +1,9 @@
 """
 User and profile database models.
 """
-from sqlalchemy import Column, String, DateTime, Boolean, Integer, Text, JSON, Date, Float
+from sqlalchemy import Column, String, DateTime, Boolean, Integer, Text, JSON, Date, Float, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from datetime import datetime, date
 import uuid
@@ -41,6 +42,19 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     last_active = Column(DateTime(timezone=True))
+    
+    # Relationships
+    photos = relationship("UserPhoto", back_populates="user", cascade="all, delete-orphan")
+    personality_profile = relationship("PersonalityProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    dating_preferences = relationship("DatingPreferences", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    
+    # Match relationships (user can be user1 or user2 in matches)
+    matches_as_user1 = relationship("Match", foreign_keys="Match.user1_id", back_populates="user1")
+    matches_as_user2 = relationship("Match", foreign_keys="Match.user2_id", back_populates="user2")
+    
+    # Session relationships
+    sessions_as_user1 = relationship("MatchSession", foreign_keys="MatchSession.user1_id", back_populates="user1")
+    sessions_as_user2 = relationship("MatchSession", foreign_keys="MatchSession.user2_id", back_populates="user2")
 
 
 class UserPhoto(Base):
@@ -49,11 +63,14 @@ class UserPhoto(Base):
     __tablename__ = "user_photos"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     file_url = Column(String(500), nullable=False)
     is_primary = Column(Boolean, default=False)
     order_index = Column(Integer, default=0)
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    user = relationship("User", back_populates="photos")
 
 
 class PersonalityProfile(Base):
@@ -62,7 +79,7 @@ class PersonalityProfile(Base):
     __tablename__ = "personality_profiles"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), unique=True, nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
     
     # Big Five personality traits (0.0 to 1.0)
     openness = Column(Float)
@@ -83,6 +100,9 @@ class PersonalityProfile(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    user = relationship("User", back_populates="personality_profile")
 
 
 class DatingPreferences(Base):
@@ -91,7 +111,7 @@ class DatingPreferences(Base):
     __tablename__ = "dating_preferences"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), unique=True, nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False, index=True)
     
     # Basic preferences
     age_range_min = Column(Integer)
@@ -108,3 +128,6 @@ class DatingPreferences(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    user = relationship("User", back_populates="dating_preferences")

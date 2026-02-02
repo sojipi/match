@@ -1,8 +1,9 @@
 """
 Conversation and session database models.
 """
-from sqlalchemy import Column, String, DateTime, Boolean, Integer, Text, JSON, Float, Enum
+from sqlalchemy import Column, String, DateTime, Boolean, Integer, Text, JSON, Float, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from datetime import datetime
 import uuid
@@ -47,9 +48,9 @@ class MatchSession(Base):
     __tablename__ = "match_sessions"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    match_id = Column(UUID(as_uuid=True), nullable=False, index=True)
-    user1_id = Column(UUID(as_uuid=True), nullable=False)
-    user2_id = Column(UUID(as_uuid=True), nullable=False)
+    match_id = Column(UUID(as_uuid=True), ForeignKey("matches.id", ondelete="CASCADE"), nullable=False, index=True)
+    user1_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user2_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     
     # Session configuration
     session_type = Column(Enum(SessionType), default=SessionType.CONVERSATION)
@@ -70,12 +71,20 @@ class MatchSession(Base):
     user2_feedback = Column(JSON, default=dict)
     
     # Metadata
-    scenario_id = Column(UUID(as_uuid=True))  # For simulation sessions
+    scenario_id = Column(UUID(as_uuid=True), ForeignKey("scenarios.id"))
     ai_agent_config = Column(JSON, default=dict)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    match = relationship("Match", back_populates="sessions")
+    user1 = relationship("User", foreign_keys=[user1_id], back_populates="sessions_as_user1")
+    user2 = relationship("User", foreign_keys=[user2_id], back_populates="sessions_as_user2")
+    scenario = relationship("Scenario", back_populates="sessions")
+    messages = relationship("ConversationMessage", back_populates="session", cascade="all, delete-orphan")
+    compatibility_report = relationship("CompatibilityReport", back_populates="session", uselist=False)
 
 
 class ConversationMessage(Base):
@@ -84,7 +93,7 @@ class ConversationMessage(Base):
     __tablename__ = "conversation_messages"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    session_id = Column(UUID(as_uuid=True), ForeignKey("match_sessions.id", ondelete="CASCADE"), nullable=False, index=True)
     
     # Message content
     sender_type = Column(Enum(AgentType), nullable=False)
@@ -99,6 +108,9 @@ class ConversationMessage(Base):
     
     # Timestamps
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Relationships
+    session = relationship("MatchSession", back_populates="messages")
 
 
 class Scenario(Base):
@@ -131,3 +143,6 @@ class Scenario(Base):
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    sessions = relationship("MatchSession", back_populates="scenario")

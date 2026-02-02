@@ -56,9 +56,3 @@ def test_exceptions_import():
     
     config_error = ConfigurationError("Config test error")
     assert str(config_error) == "Config test error"
-
-
-def test_cli_import():
-    """Test that CLI can be imported."""
-    from ai_matchmaker.cli import main
-    assert main is not None
