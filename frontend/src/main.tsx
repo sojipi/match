@@ -4,19 +4,33 @@ import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { store } from './store/store';
-import { theme } from './theme/theme';
+import { createAppTheme } from './theme/theme';
+import { useAppSelector } from './hooks/redux';
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
+
+// Theme wrapper component to access Redux state
+const ThemedApp: React.FC = () => {
+    const { mode } = useAppSelector(state => state.theme);
+    const theme = React.useMemo(() => createAppTheme(mode), [mode]);
+
+    return (
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <App />
+        </ThemeProvider>
+    );
+};
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <Provider store={store}>
-            <BrowserRouter>
-                <ThemeProvider theme={theme}>
-                    <CssBaseline />
-                    <App />
-                </ThemeProvider>
-            </BrowserRouter>
-        </Provider>
+        <ErrorBoundary>
+            <Provider store={store}>
+                <BrowserRouter>
+                    <ThemedApp />
+                </BrowserRouter>
+            </Provider>
+        </ErrorBoundary>
     </React.StrictMode>
 );

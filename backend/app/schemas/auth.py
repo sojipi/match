@@ -19,7 +19,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     """User creation schema."""
-    password: str = Field(..., min_length=8)
+    password: str = Field(..., min_length=8, max_length=72)
     date_of_birth: Optional[date] = None
     gender: Optional[str] = None
     location: Optional[str] = None
@@ -105,7 +105,7 @@ class PasswordReset(BaseModel):
 class PasswordResetConfirm(BaseModel):
     """Password reset confirmation schema."""
     token: str
-    new_password: str = Field(..., min_length=8)
+    new_password: str = Field(..., min_length=8, max_length=72)
     
     @validator('new_password')
     def validate_password(cls, v):
@@ -118,7 +118,7 @@ class PasswordResetConfirm(BaseModel):
 class PasswordChange(BaseModel):
     """Password change schema."""
     current_password: str
-    new_password: str = Field(..., min_length=8)
+    new_password: str = Field(..., min_length=8, max_length=72)
     
     @validator('new_password')
     def validate_password(cls, v):
@@ -135,7 +135,7 @@ class EmailVerification(BaseModel):
 
 class SocialLoginRequest(BaseModel):
     """Social login request schema."""
-    provider: str = Field(..., regex="^(google|facebook)$")
+    provider: str = Field(..., pattern="^(google|facebook)$")
     access_token: str
     device_info: Optional[Dict[str, Any]] = None
 

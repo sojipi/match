@@ -60,7 +60,7 @@ class Notification(Base):
     
     # Additional data
     action_url = Column(String(500))  # URL to navigate to when clicked
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -94,7 +94,7 @@ class UserActivity(Base):
     location_data = Column(JSON, default=dict)
     
     # Additional context
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

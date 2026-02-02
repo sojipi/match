@@ -43,7 +43,6 @@ class Match(Base):
     
     # Compatibility data
     compatibility_score = Column(Float)
-    compatibility_report_id = Column(UUID(as_uuid=True), ForeignKey("compatibility_reports.id"))
     
     # Interaction tracking
     conversation_count = Column(Integer, default=0)
@@ -57,7 +56,7 @@ class Match(Base):
     # Relationships
     user1 = relationship("User", foreign_keys=[user1_id], back_populates="matches_as_user1")
     user2 = relationship("User", foreign_keys=[user2_id], back_populates="matches_as_user2")
-    compatibility_report = relationship("CompatibilityReport", back_populates="match")
+    compatibility_reports = relationship("CompatibilityReport", back_populates="match", cascade="all, delete-orphan")
     sessions = relationship("MatchSession", back_populates="match", cascade="all, delete-orphan")
 
 
@@ -97,5 +96,5 @@ class CompatibilityReport(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     # Relationships
-    match = relationship("Match", back_populates="compatibility_report")
+    match = relationship("Match", back_populates="compatibility_reports")
     session = relationship("MatchSession", back_populates="compatibility_report")

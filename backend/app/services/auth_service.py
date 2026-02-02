@@ -162,7 +162,7 @@ class AuthService:
             current_activity="browsing",
             device_type=login_data.device_info.get("type", "web") if login_data.device_info else "web"
         )
-        await online_status.save_online_status()
+        online_status.save_online_status()
         
         return UserLoginResponse(
             access_token=access_token,

@@ -4,7 +4,7 @@ Security utilities for authentication and authorization.
 from datetime import datetime, timedelta
 from typing import Optional, Union, Dict, Any
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import HTTPException, status, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,10 +16,6 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.user import User
 from app.models.redis_models import UserSession, redis_client
-
-
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
@@ -81,12 +77,32 @@ def verify_token(token: str, token_type: str = "access") -> dict:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify password against hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+    # Truncate password to 72 bytes for bcrypt
+    password_bytes = plain_password.encode('utf-8')
+    if len(password_bytes) > 72:
+        password_bytes = password_bytes[:72]
+
+    # Convert hash string to bytes if needed
+    if isinstance(hashed_password, str):
+        hashed_password = hashed_password.encode('utf-8')
+
+    return bcrypt.checkpw(password_bytes, hashed_password)
 
 
 def get_password_hash(password: str) -> str:
     """Hash password."""
-    return pwd_context.hash(password)
+    # Bcrypt has a 72 byte limit, truncate if necessary
+    # Using UTF-8 encoding to count bytes properly
+    password_bytes = password.encode('utf-8')
+    if len(password_bytes) > 72:
+        password_bytes = password_bytes[:72]
+
+    # Generate salt and hash
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+
+    # Return as string
+    return hashed.decode('utf-8')
 
 
 def generate_verification_token() -> str:
@@ -130,7 +146,7 @@ async def create_user_session(
     )
     
     # Save to Redis
-    await session.save_session()
+    session.save_session()
     
     return session
 
@@ -154,7 +170,7 @@ async def get_current_user(
         
         # Check if session exists in Redis (optional but recommended)
         if session_token:
-            session = await UserSession.get_session(session_token)
+            session = UserSession.get_session(session_token)
             if not session or session.user_id != user_id:
                 raise AuthenticationError("Session not found or invalid")
         
@@ -201,7 +217,7 @@ async def refresh_access_token(refresh_token: str) -> Dict[str, str]:
             raise AuthenticationError("Invalid refresh token payload")
         
         # Check if session exists
-        session = await UserSession.get_session(session_token)
+        session = UserSession.get_session(session_token)
         if not session or session.user_id != user_id:
             raise AuthenticationError("Session not found or expired")
         
@@ -222,9 +238,9 @@ async def refresh_access_token(refresh_token: str) -> Dict[str, str]:
 
 async def revoke_session(session_token: str) -> bool:
     """Revoke a user session."""
-    session = await UserSession.get_session(session_token)
+    session = UserSession.get_session(session_token)
     if session:
-        return await session.delete_session()
+        return session.delete_session()
     return False
 
 
@@ -256,13 +272,19 @@ async def revoke_all_user_sessions(user_id: str) -> bool:
 
 def validate_password_strength(password: str) -> Dict[str, Any]:
     """Validate password strength."""
-    
+
     errors = []
     score = 0
-    
+
     # Length check
     if len(password) < 8:
         errors.append("Password must be at least 8 characters long")
+    else:
+        score += 1
+
+    # Maximum length check (bcrypt limitation)
+    if len(password.encode('utf-8')) > 72:
+        errors.append("Password cannot exceed 72 bytes")
     else:
         score += 1
     

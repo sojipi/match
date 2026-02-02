@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "Bash(tasklist:*)",
+      "Bash(py -c:*)",
+      "Bash(py -m pip:*)",
+      "Bash(redis-cli ping:*)",
+      "Bash(venv\\\\Scripts\\\\python.exe -m pip:*)",
+      "Bash(venv\\\\Scripts\\\\pip.exe install:*)",
+      "Bash(.\\\\venv\\\\Scripts\\\\pip.exe install:*)"
+    ]
+  }
+}

@@ -10,8 +10,15 @@ import uuid
 from app.core.config import settings
 
 
-# Redis client instance
-redis_client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True)
+# Redis client instance with timeout settings to prevent blocking
+redis_client = redis.Redis.from_url(
+    settings.REDIS_URL,
+    decode_responses=True,
+    socket_connect_timeout=5,  # 5 seconds to establish connection
+    socket_timeout=5,  # 5 seconds for socket operations
+    retry_on_timeout=True,  # Retry on timeout
+    health_check_interval=30  # Health check every 30 seconds
+)
 
 
 class RedisBaseModel(BaseModel):
