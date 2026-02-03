@@ -4,6 +4,7 @@ import { useAppSelector } from './hooks/redux';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
+import PersonalityAssessmentPage from './pages/PersonalityAssessmentPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -34,6 +35,16 @@ const App: React.FC = () => {
                     <ProtectedRoute>
                         <AppLayout>
                             <Dashboard />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/personality-assessment"
+                element={
+                    <ProtectedRoute>
+                        <AppLayout>
+                            <PersonalityAssessmentPage />
                         </AppLayout>
                     </ProtectedRoute>
                 }

@@ -201,6 +201,9 @@ class ApiClient {
 // Create and export a singleton instance
 export const apiClient = new ApiClient();
 
+// Export as 'api' for backward compatibility
+export const api = apiClient;
+
 // Extend Window interface for TypeScript
 declare global {
     interface Window {

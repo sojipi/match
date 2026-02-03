@@ -6,9 +6,15 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { store } from './store/store';
 import { createAppTheme } from './theme/theme';
 import { useAppSelector } from './hooks/redux';
+import { updateToken } from './store/slices/authSlice';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
+
+// Setup global token update handler for API client
+window.dispatchTokenUpdate = (token: string) => {
+    store.dispatch(updateToken(token));
+};
 
 // Theme wrapper component to access Redux state
 const ThemedApp: React.FC = () => {
