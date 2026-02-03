@@ -1,8 +1,8 @@
 # Database models
 from .user import User, UserPhoto, PersonalityProfile, DatingPreferences
 from .avatar import AIAvatar, AvatarCustomization, AvatarTrainingSession, AvatarStatus
-from .match import Match, CompatibilityReport, MatchStatus, InterestLevel
-from .conversation import MatchSession, ConversationMessage, Scenario, SessionType, SessionStatus, AgentType, MessageType
+from .match import Match, MatchSession, CompatibilityReport, MatchStatus, MatchSessionStatus, InterestLevel
+from .conversation import ConversationSession, ConversationMessage, ConversationCompatibilityReport, ScenarioTemplate, SessionType, SessionStatus, AgentType, MessageType
 from .notification import (
     Notification,
     NotificationPreference,
@@ -27,14 +27,17 @@ __all__ = [
     
     # Match models
     "Match",
+    "MatchSession",
     "CompatibilityReport",
     "MatchStatus",
+    "MatchSessionStatus",
     "InterestLevel",
     
     # Conversation models
-    "MatchSession",
+    "ConversationSession",
     "ConversationMessage",
-    "Scenario",
+    "ConversationCompatibilityReport",
+    "ScenarioTemplate",
     "SessionType",
     "SessionStatus",
     "AgentType",

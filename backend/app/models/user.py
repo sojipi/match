@@ -56,6 +56,10 @@ class User(Base):
     # Session relationships
     sessions_as_user1 = relationship("MatchSession", foreign_keys="MatchSession.user1_id", back_populates="user1")
     sessions_as_user2 = relationship("MatchSession", foreign_keys="MatchSession.user2_id", back_populates="user2")
+    
+    # Conversation session relationships
+    conversation_sessions_as_user1 = relationship("ConversationSession", foreign_keys="ConversationSession.user1_id", back_populates="user1")
+    conversation_sessions_as_user2 = relationship("ConversationSession", foreign_keys="ConversationSession.user2_id", back_populates="user2")
 
 
 class UserPhoto(Base):

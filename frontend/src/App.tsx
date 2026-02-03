@@ -9,6 +9,8 @@ import AvatarPage from './pages/AvatarPage';
 import MatchDiscoveryPage from './pages/MatchDiscoveryPage';
 import MatchesPage from './pages/MatchesPage';
 import NotificationsPage from './pages/NotificationsPage';
+import LiveMatchingTheaterPage from './pages/LiveMatchingTheaterPage';
+import WebSocketTestPage from './pages/WebSocketTestPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -90,6 +92,22 @@ const App: React.FC = () => {
                         <AppLayout>
                             <NotificationsPage />
                         </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/theater/:sessionId"
+                element={
+                    <ProtectedRoute>
+                        <LiveMatchingTheaterPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/websocket-test"
+                element={
+                    <ProtectedRoute>
+                        <WebSocketTestPage />
                     </ProtectedRoute>
                 }
             />

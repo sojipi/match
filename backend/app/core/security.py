@@ -224,7 +224,8 @@ async def refresh_access_token(refresh_token: str) -> Dict[str, str]:
         # Create new access token
         access_token = create_access_token({
             "sub": user_id,
-            "session": session_token
+            "session": session_token,
+            "permissions": ["websocket_access"]
         })
 
         return {

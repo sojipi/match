@@ -6,21 +6,44 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import uvicorn
+import logging
 
 from app.core.config import settings
 from app.core.database import init_db
+from app.core.ai_config import initialize_ai_services
 from app.api.v1.api import api_router
 from app.websocket.manager import router as websocket_router
+from app.websocket.events import start_websocket_events, stop_websocket_events
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     # Startup
+    logger.info("Starting AI Matchmaker application...")
+    
+    # Initialize database
     await init_db()
+    logger.info("Database initialized")
+    
+    # Initialize AI services
+    ai_status = initialize_ai_services()
+    logger.info(f"AI services initialization: {ai_status}")
+    
+    # Start WebSocket events
+    await start_websocket_events()
+    logger.info("WebSocket events started")
+    
+    logger.info("Application startup complete")
+    
     yield
+    
     # Shutdown
-    pass
+    logger.info("Shutting down application...")
+    await stop_websocket_events()
+    logger.info("Application shutdown complete")
 
 
 # Create FastAPI application
@@ -52,7 +75,15 @@ if settings.ENVIRONMENT == "production":
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "version": "1.0.0"}
+    from app.core.ai_config import get_ai_service_status
+    
+    ai_status = get_ai_service_status()
+    
+    return {
+        "status": "healthy", 
+        "version": "1.0.0",
+        "ai_services": ai_status
+    }
 
 
 if __name__ == "__main__":

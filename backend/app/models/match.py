@@ -27,6 +27,15 @@ class InterestLevel(enum.Enum):
     SUPER_LIKE = "super_like"
 
 
+class MatchSessionStatus(enum.Enum):
+    """Match session status enumeration."""
+    SCHEDULED = "scheduled"
+    ACTIVE = "active"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+
 class Match(Base):
     """Match relationship between two users."""
     
@@ -58,6 +67,56 @@ class Match(Base):
     user2 = relationship("User", foreign_keys=[user2_id], back_populates="matches_as_user2")
     compatibility_reports = relationship("CompatibilityReport", back_populates="match", cascade="all, delete-orphan")
     sessions = relationship("MatchSession", back_populates="match", cascade="all, delete-orphan")
+
+
+class MatchSession(Base):
+    """Session for a specific match between two users."""
+    
+    __tablename__ = "match_sessions"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    match_id = Column(UUID(as_uuid=True), ForeignKey("matches.id", ondelete="CASCADE"), nullable=False, index=True)
+    user1_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user2_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    # Session details
+    session_type = Column(String(50), default="live_matching")  # live_matching, simulation, speed_chat
+    status = Column(Enum(MatchSessionStatus), default=MatchSessionStatus.SCHEDULED)
+    
+    # Session metadata
+    title = Column(String(200))
+    description = Column(Text)
+    
+    # Timing
+    scheduled_at = Column(DateTime(timezone=True))
+    started_at = Column(DateTime(timezone=True))
+    ended_at = Column(DateTime(timezone=True))
+    duration_minutes = Column(Integer)
+    
+    # Session configuration
+    max_duration_minutes = Column(Integer, default=30)
+    is_public = Column(Boolean, default=False)
+    allow_observers = Column(Boolean, default=False)
+    
+    # Live session data
+    current_phase = Column(String(50))  # introduction, conversation, scenario, wrap_up
+    observer_count = Column(Integer, default=0)
+    engagement_score = Column(Float, default=0.0)
+    
+    # Results
+    final_compatibility_score = Column(Float)
+    session_highlights = Column(JSON, default=list)
+    user_feedback = Column(JSON, default=dict)
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    match = relationship("Match", back_populates="sessions")
+    user1 = relationship("User", foreign_keys=[user1_id], back_populates="sessions_as_user1")
+    user2 = relationship("User", foreign_keys=[user2_id], back_populates="sessions_as_user2")
+    compatibility_report = relationship("CompatibilityReport", back_populates="session", uselist=False)
 
 
 class CompatibilityReport(Base):

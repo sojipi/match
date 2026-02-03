@@ -432,7 +432,16 @@ class MatchService:
         """Check if user is currently online."""
         if not user.last_active:
             return False
-        
+
         # Consider user online if active within last 15 minutes
-        time_diff = datetime.utcnow() - user.last_active
+        # Make datetime timezone-aware if needed
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
+        last_active = user.last_active
+
+        # If last_active is naive, make it aware
+        if last_active.tzinfo is None:
+            last_active = last_active.replace(tzinfo=timezone.utc)
+
+        time_diff = now - last_active
         return time_diff.total_seconds() < 900  # 15 minutes

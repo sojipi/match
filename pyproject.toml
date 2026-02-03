@@ -47,7 +47,7 @@ dependencies = [
     
     # Core AI and Agent Framework
     "agentscope>=0.0.5",
-    "google-generativeai>=0.3.0",
+    "google-genai>=0.3.0",
     "mem0ai>=0.1.0",
     
     # Data Processing and Validation

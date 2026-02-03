@@ -114,7 +114,8 @@ class AuthService:
         
         access_token = create_access_token({
             "sub": str(user.id),
-            "session": session.session_token
+            "session": session.session_token,
+            "permissions": ["websocket_access"]
         })
         
         return UserLoginResponse(
@@ -151,7 +152,11 @@ class AuthService:
         session = await create_user_session(user, request, login_data.device_info)
         
         # Create access token
-        token_data = {"sub": str(user.id), "session": session.session_token}
+        token_data = {
+            "sub": str(user.id), 
+            "session": session.session_token,
+            "permissions": ["websocket_access"]
+        }
         access_token = create_access_token(token_data)
         
         # Update online status

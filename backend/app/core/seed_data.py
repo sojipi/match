@@ -9,7 +9,7 @@ import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import AsyncSessionLocal
 from app.models.user import User, PersonalityProfile, DatingPreferences, UserPhoto
-from app.models.conversation import Scenario
+from app.models.conversation import ScenarioTemplate
 from app.models.notification import Notification, NotificationType
 from app.core.security import get_password_hash
 
