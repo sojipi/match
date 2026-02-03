@@ -47,6 +47,7 @@ class User(Base):
     photos = relationship("UserPhoto", back_populates="user", cascade="all, delete-orphan")
     personality_profile = relationship("PersonalityProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
     dating_preferences = relationship("DatingPreferences", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    ai_avatar = relationship("AIAvatar", back_populates="user", uselist=False, cascade="all, delete-orphan")
     
     # Match relationships (user can be user1 or user2 in matches)
     matches_as_user1 = relationship("Match", foreign_keys="Match.user1_id", back_populates="user1")
@@ -103,6 +104,7 @@ class PersonalityProfile(Base):
     
     # Relationships
     user = relationship("User", back_populates="personality_profile")
+    ai_avatar = relationship("AIAvatar", back_populates="personality_profile", uselist=False)
 
 
 class DatingPreferences(Base):

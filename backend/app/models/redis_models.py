@@ -82,7 +82,7 @@ class UserSession(RedisBaseModel):
     @classmethod
     def get_session(cls, session_token: str) -> Optional['UserSession']:
         """Get session from Redis."""
-        key = cls().to_redis_key("session", session_token)
+        key = f"session:{session_token}"
         return cls.load_from_redis(key)
     
     def delete_session(self) -> bool:
@@ -114,7 +114,7 @@ class LiveSessionData(RedisBaseModel):
     @classmethod
     def get_live_session(cls, session_id: str) -> Optional['LiveSessionData']:
         """Get live session data from Redis."""
-        key = cls().to_redis_key("live_session", session_id)
+        key = f"live_session:{session_id}"
         return cls.load_from_redis(key)
     
     def add_connected_user(self, user_id: str) -> bool:
@@ -155,7 +155,7 @@ class UserOnlineStatus(RedisBaseModel):
     @classmethod
     def get_online_status(cls, user_id: str) -> Optional['UserOnlineStatus']:
         """Get user online status from Redis."""
-        key = cls().to_redis_key("online", user_id)
+        key = f"online:{user_id}"
         return cls.load_from_redis(key)
     
     def update_activity(self, activity: str) -> bool:
@@ -185,7 +185,7 @@ class MatchingQueue(RedisBaseModel):
     @classmethod
     def get_queue_entry(cls, user_id: str) -> Optional['MatchingQueue']:
         """Get user's queue entry."""
-        key = cls().to_redis_key("queue", user_id)
+        key = f"queue:{user_id}"
         return cls.load_from_redis(key)
     
     def leave_queue(self) -> bool:
@@ -196,7 +196,7 @@ class MatchingQueue(RedisBaseModel):
     @classmethod
     def get_all_queue_entries(cls) -> List['MatchingQueue']:
         """Get all users in matching queue."""
-        pattern = cls().to_redis_key("queue", "*")
+        pattern = "queue:*"
         keys = redis_client.keys(pattern)
         entries = []
         for key in keys:
@@ -258,7 +258,7 @@ class CachedCompatibilityScore(RedisBaseModel):
     @classmethod
     def get_score(cls, user1_id: str, user2_id: str) -> Optional['CachedCompatibilityScore']:
         """Get cached compatibility score."""
-        key = cls().to_redis_key("compat", f"{user1_id}:{user2_id}")
+        key = f"compat:{user1_id}:{user2_id}"
         return cls.load_from_redis(key)
 
 

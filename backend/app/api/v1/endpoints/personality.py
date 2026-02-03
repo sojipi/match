@@ -351,6 +351,30 @@ async def submit_personality_assessment(
     await db.commit()
     await db.refresh(profile)
     
+    # Trigger avatar creation/update
+    try:
+        from app.services.avatar_service import AvatarService
+        avatar_service = AvatarService(db)
+        
+        # Check if avatar exists
+        existing_avatar = await avatar_service.get_avatar_by_user_id(str(user_id))
+        
+        if existing_avatar:
+            # Update existing avatar
+            await avatar_service.update_avatar_from_personality(
+                str(existing_avatar.id),
+                str(profile.id)
+            )
+        else:
+            # Create new avatar
+            await avatar_service.create_avatar_from_personality(
+                str(user_id),
+                str(profile.id)
+            )
+    except Exception as e:
+        # Log error but don't fail the personality assessment
+        print(f"Failed to update avatar for user {user_id}: {e}")
+    
     return PersonalityProfileResponse(
         id=str(profile.id),
         user_id=str(profile.user_id),

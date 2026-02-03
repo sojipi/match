@@ -181,6 +181,34 @@ const Dashboard: React.FC = () => {
                     </Card>
                 </Grid>
 
+                {/* AI Avatar Management Card */}
+                <Grid item xs={12} md={8}>
+                    <Card>
+                        <CardContent>
+                            <Box display="flex" alignItems="center" mb={2}>
+                                <Psychology color="primary" sx={{ mr: 2 }} />
+                                <Typography variant="h6">
+                                    AI Avatar
+                                </Typography>
+                            </Box>
+
+                            <Typography variant="body2" color="text.secondary" paragraph>
+                                Your AI avatar represents your personality in conversations and matchmaking.
+                                Create and customize your avatar to ensure authentic interactions.
+                            </Typography>
+
+                            <Button
+                                variant="outlined"
+                                onClick={() => navigate('/avatar')}
+                                startIcon={<Psychology />}
+                                size="large"
+                            >
+                                Manage Avatar
+                            </Button>
+                        </CardContent>
+                    </Card>
+                </Grid>
+
                 {/* Quick Stats */}
                 <Grid item xs={12} md={4}>
                     <Stack spacing={2}>

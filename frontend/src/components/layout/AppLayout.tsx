@@ -27,10 +27,12 @@ import {
     Favorite as FavoriteIcon,
     Chat as ChatIcon,
     Person as PersonIcon,
+    Psychology as PsychologyIcon,
     Settings as SettingsIcon,
     Logout as LogoutIcon,
     LightMode,
     DarkMode,
+    Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
@@ -38,6 +40,7 @@ import { logout } from '../../store/slices/authSlice';
 import { toggleTheme } from '../../store/slices/themeSlice';
 import { useAccessibility } from '../../hooks/useAccessibility';
 import SkipLink from '../SkipLink';
+import NotificationCenter from '../notifications/NotificationCenter';
 
 interface AppLayoutProps {
     children: React.ReactNode;
@@ -50,6 +53,8 @@ const navigationItems = [
     { text: 'Discover', icon: <SearchIcon />, path: '/discover' },
     { text: 'Matches', icon: <FavoriteIcon />, path: '/matches' },
     { text: 'Messages', icon: <ChatIcon />, path: '/messages' },
+    { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
+    { text: 'AI Avatar', icon: <PsychologyIcon />, path: '/avatar' },
     { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
 ];
 
@@ -204,6 +209,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                         {navigationItems.find(item => item.path === location.pathname)?.text || 'AI Matchmaker'}
                     </Typography>
 
+                    <NotificationCenter />
+
                     <IconButton
                         size="large"
                         edge="end"
@@ -212,6 +219,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                         aria-haspopup="true"
                         onClick={handleProfileMenuOpen}
                         color="inherit"
+                        sx={{ ml: 1 }}
                     >
                         <Avatar
                             sx={{ width: 32, height: 32 }}

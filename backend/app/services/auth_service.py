@@ -97,10 +97,9 @@ class AuthService:
         welcome_notification = Notification(
             id=uuid.uuid4(),
             user_id=user.id,
-            type=NotificationType.SYSTEM_ANNOUNCEMENT,
+            type=NotificationType.SYSTEM,
             title="Welcome to AI Matchmaker!",
             message="Complete your personality assessment to start finding compatible matches.",
-            priority=2,
             action_url="/onboarding/personality"
         )
         

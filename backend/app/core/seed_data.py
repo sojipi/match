@@ -457,17 +457,15 @@ async def create_sample_notifications(db: AsyncSession, users: List[User]) -> No
     
     notifications_data = [
         {
-            "type": NotificationType.SYSTEM_ANNOUNCEMENT,
+            "type": NotificationType.SYSTEM,
             "title": "Welcome to AI Matchmaker!",
             "message": "Complete your personality assessment to start finding compatible matches.",
-            "priority": 2,
             "action_url": "/onboarding/personality"
         },
         {
-            "type": NotificationType.NEW_MATCH,
+            "type": NotificationType.MATCH,
             "title": "New Potential Match!",
             "message": "You have a new potential match with high compatibility. Check it out!",
-            "priority": 2,
             "related_user_id": users[1].id,
             "action_url": f"/matches/{users[1].id}"
         }

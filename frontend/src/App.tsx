@@ -5,6 +5,10 @@ import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import PersonalityAssessmentPage from './pages/PersonalityAssessmentPage';
+import AvatarPage from './pages/AvatarPage';
+import MatchDiscoveryPage from './pages/MatchDiscoveryPage';
+import MatchesPage from './pages/MatchesPage';
+import NotificationsPage from './pages/NotificationsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -50,11 +54,21 @@ const App: React.FC = () => {
                 }
             />
             <Route
+                path="/avatar"
+                element={
+                    <ProtectedRoute>
+                        <AppLayout>
+                            <AvatarPage />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
                 path="/discover"
                 element={
                     <ProtectedRoute>
                         <AppLayout>
-                            <div>Discover Page - Coming Soon</div>
+                            <MatchDiscoveryPage />
                         </AppLayout>
                     </ProtectedRoute>
                 }
@@ -64,17 +78,17 @@ const App: React.FC = () => {
                 element={
                     <ProtectedRoute>
                         <AppLayout>
-                            <div>Matches Page - Coming Soon</div>
+                            <MatchesPage />
                         </AppLayout>
                     </ProtectedRoute>
                 }
             />
             <Route
-                path="/messages"
+                path="/notifications"
                 element={
                     <ProtectedRoute>
                         <AppLayout>
-                            <div>Messages Page - Coming Soon</div>
+                            <NotificationsPage />
                         </AppLayout>
                     </ProtectedRoute>
                 }

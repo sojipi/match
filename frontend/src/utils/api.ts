@@ -159,7 +159,12 @@ class ApiClient {
             // Failed to parse error, use default message
         }
 
-        return new Error(message);
+        // Create error with status code information
+        const error = new Error(message) as any;
+        error.status = response.status;
+        error.statusText = response.statusText;
+
+        return error;
     }
 
     /**

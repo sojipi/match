@@ -226,10 +226,11 @@ async def refresh_access_token(refresh_token: str) -> Dict[str, str]:
             "sub": user_id,
             "session": session_token
         })
-        
+
         return {
             "access_token": access_token,
-            "token_type": "bearer"
+            "token_type": "bearer",
+            "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
         }
         
     except JWTError:
