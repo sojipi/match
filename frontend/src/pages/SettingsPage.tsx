@@ -15,13 +15,21 @@ import {
     Divider,
     IconButton,
     InputAdornment,
-    Link
+    Link,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemIcon
 } from '@mui/material';
 import {
     Save,
     Visibility,
     VisibilityOff,
-    Info
+    Info,
+    Person,
+    Lock,
+    Notifications,
+    ArrowForward
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -63,9 +71,9 @@ const SettingsPage: React.FC = () => {
 
     const loadSettings = async () => {
         try {
-            const response = await api.get('/users/settings');
-            if (response.data.gemini_api_key) {
-                setGeminiApiKey(response.data.gemini_api_key);
+            const response = await api.get('/api/v1/users/settings');
+            if (response.gemini_api_key) {
+                setGeminiApiKey(response.gemini_api_key);
             }
         } catch (err) {
             console.error('Failed to load settings:', err);
@@ -78,7 +86,7 @@ const SettingsPage: React.FC = () => {
         setSuccess(false);
 
         try {
-            await api.put('/users/settings', {
+            await api.put('/api/v1/users/settings', {
                 gemini_api_key: geminiApiKey
             });
             setSuccess(true);
@@ -96,12 +104,15 @@ const SettingsPage: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
-            <Paper elevation={3}>
+            <Typography variant="h4" component="h1" gutterBottom>
+                Settings
+            </Typography>
+
+            <Paper elevation={3} sx={{ mb: 3 }}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs value={tabValue} onChange={handleTabChange}>
                         <Tab label="API Configuration" />
-                        <Tab label="Notifications" />
-                        <Tab label="Privacy" />
+                        <Tab label="Quick Links" />
                     </Tabs>
                 </Box>
 
@@ -204,22 +215,50 @@ const SettingsPage: React.FC = () => {
 
                 <TabPanel value={tabValue} index={1}>
                     <Typography variant="h5" gutterBottom>
-                        Notification Settings
+                        Quick Links
                     </Typography>
                     <Divider sx={{ my: 2 }} />
-                    <Typography variant="body2" color="text.secondary">
-                        Notification settings coming soon...
-                    </Typography>
-                </TabPanel>
 
-                <TabPanel value={tabValue} index={2}>
-                    <Typography variant="h5" gutterBottom>
-                        Privacy Settings
-                    </Typography>
-                    <Divider sx={{ my: 2 }} />
-                    <Typography variant="body2" color="text.secondary">
-                        Privacy settings coming soon...
-                    </Typography>
+                    <List>
+                        <ListItem button onClick={() => navigate('/profile')}>
+                            <ListItemIcon>
+                                <Person color="primary" />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary="Profile Management"
+                                secondary="Edit your profile, photos, and basic information"
+                            />
+                            <ArrowForward />
+                        </ListItem>
+                        <Divider />
+                        <ListItem button onClick={() => navigate('/profile')}>
+                            <ListItemIcon>
+                                <Lock color="primary" />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary="Privacy Settings"
+                                secondary="Control who can see your profile and information"
+                            />
+                            <ArrowForward />
+                        </ListItem>
+                        <Divider />
+                        <ListItem button onClick={() => navigate('/profile')}>
+                            <ListItemIcon>
+                                <Notifications color="primary" />
+                            </ListItemIcon>
+                            <ListItemText
+                                primary="Notification Preferences"
+                                secondary="Manage email and push notification settings"
+                            />
+                            <ArrowForward />
+                        </ListItem>
+                    </List>
+
+                    <Alert severity="info" sx={{ mt: 3 }}>
+                        <Typography variant="body2">
+                            For detailed profile, privacy, and notification settings, visit the Profile Management page.
+                        </Typography>
+                    </Alert>
                 </TabPanel>
             </Paper>
         </Container>

@@ -15,6 +15,7 @@ import SettingsPage from './pages/SettingsPage';
 import CompatibilityReportPage from './pages/CompatibilityReportPage';
 import ConversationHistoryPage from './pages/ConversationHistoryPage';
 import MatchConversationsPage from './pages/MatchConversationsPage';
+import ProfileManagementPage from './pages/ProfileManagementPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -120,7 +121,7 @@ const App: React.FC = () => {
                 element={
                     <ProtectedRoute>
                         <AppLayout>
-                            <div>Profile Page - Coming Soon</div>
+                            <ProfileManagementPage />
                         </AppLayout>
                     </ProtectedRoute>
                 }

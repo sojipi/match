@@ -29,6 +29,10 @@ class ApiClient {
             headers.set('Content-Type', 'application/json');
         }
 
+        // Prevent caching of API responses
+        headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        headers.set('Pragma', 'no-cache');
+
         // Add authentication token if not skipped
         if (!skipAuth) {
             const token = localStorage.getItem('token');
@@ -58,6 +62,12 @@ class ApiClient {
                 this.handleAuthFailure();
                 throw new Error('Authentication failed');
             }
+        }
+
+        // Handle 304 Not Modified - return empty object or cached data
+        if (response.status === 304) {
+            console.warn('Received 304 Not Modified response');
+            return {} as T;
         }
 
         // Handle non-OK responses
