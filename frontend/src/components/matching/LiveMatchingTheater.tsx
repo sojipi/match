@@ -8,16 +8,10 @@ import {
     Typography,
     IconButton,
     Chip,
-    Fab,
-    Drawer,
     Badge,
     Alert,
     LinearProgress,
     Tooltip,
-    Avatar,
-    Card,
-    CardContent,
-    Divider,
     Button,
     Dialog,
     DialogTitle,
@@ -30,14 +24,8 @@ import {
     MenuItem
 } from '@mui/material';
 import {
-    PlayArrow,
-    Pause,
-    Stop,
     Assessment,
     People,
-    Favorite,
-    ThumbUp,
-    EmojiEmotions,
     Warning,
     Send,
     Close,
@@ -48,17 +36,16 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Drawer } from '@mui/material';
 
 import { websocketService } from '../../services/websocketService';
 import { useAppSelector } from '../../hooks/redux';
 import {
-    MatchSession,
     ConversationMessage,
     CompatibilityUpdate,
     UserReaction,
     SessionViewer,
-    TheaterState,
-    WebSocketEventType
+    TheaterState
 } from '../../types/matching';
 import ConversationDisplay from './ConversationDisplay';
 import CompatibilityPanel from './CompatibilityPanel';
@@ -80,7 +67,7 @@ const LiveMatchingTheater: React.FC<LiveMatchingTheaterProps> = ({
     const sessionId = propSessionId || paramSessionId;
 
     // Get auth token from Redux store
-    const { token, user } = useAppSelector(state => state.auth);
+    const { token } = useAppSelector(state => state.auth);
 
     // State management
     const [state, setState] = useState<TheaterState>({
@@ -104,7 +91,9 @@ const LiveMatchingTheater: React.FC<LiveMatchingTheaterProps> = ({
         isLoading: true,
         showCompatibilityPanel: false,
         showViewersPanel: false,
-        showCompletionDialog: false
+        showCompletionDialog: false,
+        showQuotaExceededDialog: false,
+        quotaErrorDetails: null
     });
 
     // UI state
@@ -239,10 +228,19 @@ const LiveMatchingTheater: React.FC<LiveMatchingTheaterProps> = ({
     }, [navigate, onSessionEnd]);
 
     const handleError = useCallback((data: any) => {
-        setState(prev => ({
-            ...prev,
-            connectionError: data.message
-        }));
+        // Check if it's a Gemini quota error
+        if (data.type === 'gemini_quota_exceeded') {
+            setState(prev => ({
+                ...prev,
+                showQuotaExceededDialog: true,
+                quotaErrorDetails: data
+            }));
+        } else {
+            setState(prev => ({
+                ...prev,
+                connectionError: data.message
+            }));
+        }
     }, []);
 
     // Initialize WebSocket connection
@@ -280,6 +278,7 @@ const LiveMatchingTheater: React.FC<LiveMatchingTheaterProps> = ({
                 websocketService.on('user_left', handleUserLeft);
                 websocketService.on('user_reaction', handleUserReaction);
                 websocketService.on('session_status_change', handleSessionStatusChange);
+                websocketService.on('gemini_quota_exceeded', handleError);
                 websocketService.on('error', handleError);
 
                 // Connect to session
@@ -317,6 +316,7 @@ const LiveMatchingTheater: React.FC<LiveMatchingTheaterProps> = ({
             websocketService.off('user_left', handleUserLeft);
             websocketService.off('user_reaction', handleUserReaction);
             websocketService.off('session_status_change', handleSessionStatusChange);
+            websocketService.off('gemini_quota_exceeded', handleError);
             websocketService.off('error', handleError);
             websocketService.disconnect();
         };
@@ -416,6 +416,17 @@ const LiveMatchingTheater: React.FC<LiveMatchingTheaterProps> = ({
         );
     }
 
+    // Handle Gemini quota exceeded dialog
+    const handleCloseQuotaDialog = () => {
+        setState(prev => ({ ...prev, showQuotaExceededDialog: false }));
+        // Redirect to matches page when closing without going to settings
+        navigate('/matches');
+    };
+
+    const handleGoToSettings = () => {
+        navigate('/settings');
+    };
+
     return (
         <Box
             ref={theaterRef}
@@ -428,205 +439,248 @@ const LiveMatchingTheater: React.FC<LiveMatchingTheaterProps> = ({
                 overflow: 'hidden'
             }}
         >
-            {/* Theater Header */}
-            <Paper
-                elevation={2}
-                sx={{
-                    p: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    borderRadius: isFullscreen ? 0 : 1
-                }}
-            >
-                <Box display="flex" alignItems="center" gap={2}>
-                    <Typography variant="h5" component="h1">
-                        Live AI Theater
-                    </Typography>
-                    <Chip
-                        label={state.session?.status || 'Unknown'}
-                        color={state.session?.status === 'active' ? 'success' : 'default'}
-                        size="small"
-                    />
-                    <Badge badgeContent={state.viewers.length} color="primary">
-                        <People />
-                    </Badge>
-                </Box>
-
-                <Box display="flex" alignItems="center" gap={1}>
-                    <Tooltip title="Compatibility Metrics">
-                        <IconButton onClick={toggleCompatibilityPanel}>
-                            <Assessment />
-                        </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title="Viewers">
-                        <IconButton onClick={toggleViewersPanel}>
-                            <Badge badgeContent={state.viewers.length} color="primary">
-                                <People />
-                            </Badge>
-                        </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title={soundEnabled ? "Mute Sounds" : "Enable Sounds"}>
-                        <IconButton onClick={() => setSoundEnabled(!soundEnabled)}>
-                            {soundEnabled ? <VolumeUp /> : <VolumeOff />}
-                        </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
-                        <IconButton onClick={toggleFullscreen}>
-                            {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
-                        </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title="Close Theater">
-                        <IconButton onClick={() => navigate('/matches')}>
-                            <Close />
-                        </IconButton>
-                    </Tooltip>
-                </Box>
-            </Paper>
-
-            {/* Main Theater Content */}
-            <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-                {/* Conversation Area */}
-                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    {/* Avatar Display */}
-                    <AvatarDisplay
-                        session={state.session}
-                        compatibility={state.compatibility}
-                    />
-
-                    {/* Conversation Display */}
-                    <Box sx={{ flex: 1, overflow: 'hidden' }}>
-                        <ConversationDisplay
-                            messages={state.messages}
-                            userReactions={state.userReactions}
-                            onReaction={sendReaction}
-                            selectedMessage={state.selectedMessage}
-                        />
-                        <div ref={messagesEndRef} />
-                    </Box>
-
-                    {/* User Controls */}
-                    <UserControls
-                        session={state.session}
-                        onStartConversation={startConversation}
-                        onSendGuidance={() => setShowGuidanceDialog(true)}
-                        onRequestUpdate={() => websocketService.requestCompatibilityUpdate()}
-                        isConnected={state.isConnected}
-                    />
-                </Box>
-
-                {/* Side Panels */}
-                <Drawer
-                    anchor="right"
-                    open={state.showCompatibilityPanel}
-                    onClose={toggleCompatibilityPanel}
-                    variant="temporary"
-                    sx={{
-                        '& .MuiDrawer-paper': {
-                            width: 400,
-                            position: 'relative',
-                            height: '100%'
-                        }
-                    }}
-                >
-                    <CompatibilityPanel
-                        compatibility={state.compatibility}
-                        session={state.session}
-                        onClose={toggleCompatibilityPanel}
-                    />
-                </Drawer>
-
-                <Drawer
-                    anchor="right"
-                    open={state.showViewersPanel}
-                    onClose={toggleViewersPanel}
-                    variant="temporary"
-                    sx={{
-                        '& .MuiDrawer-paper': {
-                            width: 300,
-                            position: 'relative',
-                            height: '100%'
-                        }
-                    }}
-                >
-                    <ViewersPanel
-                        viewers={state.viewers}
-                        onClose={toggleViewersPanel}
-                    />
-                </Drawer>
-            </Box>
-
-            {/* Guidance Dialog */}
+            {/* Gemini Quota Exceeded Dialog */}
             <Dialog
-                open={showGuidanceDialog}
-                onClose={() => setShowGuidanceDialog(false)}
+                open={state.showQuotaExceededDialog}
+                onClose={handleCloseQuotaDialog}
                 maxWidth="sm"
                 fullWidth
+                disableEscapeKeyDown
             >
-                <DialogTitle>Send Guidance to Your Avatar</DialogTitle>
+                <DialogTitle>
+                    <Box display="flex" alignItems="center" gap={1}>
+                        <Warning color="warning" />
+                        <Typography variant="h6">API Quota Limit Reached</Typography>
+                    </Box>
+                </DialogTitle>
                 <DialogContent>
-                    <FormControl fullWidth sx={{ mb: 2, mt: 1 }}>
-                        <InputLabel>Select Avatar</InputLabel>
-                        <Select
-                            value={selectedAvatar}
-                            onChange={(e) => setSelectedAvatar(e.target.value)}
-                            label="Select Avatar"
-                        >
-                            <MenuItem value="user_avatar_1">Your Avatar</MenuItem>
-                            <MenuItem value="user_avatar_2">Match's Avatar</MenuItem>
-                        </Select>
-                    </FormControl>
-
-                    <TextField
-                        fullWidth
-                        multiline
-                        rows={3}
-                        label="Guidance Message"
-                        value={guidanceText}
-                        onChange={(e) => setGuidanceText(e.target.value)}
-                        placeholder="Provide guidance to your avatar about how to respond..."
-                        helperText="Your avatar will receive this guidance for the next response"
-                    />
+                    <Typography variant="body1" paragraph>
+                        The system's Gemini API Key has reached its daily usage limit.
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" paragraph>
+                        To continue using AI conversation features, we recommend configuring your own Gemini API Key.
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Click "Go to Settings" to configure your API Key, or "Close" to return to the matches page.
+                    </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setShowGuidanceDialog(false)}>
-                        Cancel
+                    <Button onClick={handleCloseQuotaDialog} variant="outlined">
+                        Close
                     </Button>
                     <Button
-                        onClick={sendGuidance}
                         variant="contained"
-                        disabled={!guidanceText.trim() || !selectedAvatar}
+                        onClick={handleGoToSettings}
                         startIcon={<Send />}
+                        autoFocus
                     >
-                        Send Guidance
+                        Go to Settings
                     </Button>
                 </DialogActions>
             </Dialog>
 
-            {/* Connection Status Indicator */}
-            <AnimatePresence>
-                {!state.isConnected && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 50 }}
-                        style={{
-                            position: 'absolute',
-                            bottom: 16,
-                            left: 16,
-                            zIndex: 1000
+            {/* Main Theater Content */}
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {/* Theater Header */}
+                <Paper
+                    elevation={2}
+                    sx={{
+                        p: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        borderRadius: isFullscreen ? 0 : 1
+                    }}
+                >
+                    <Box display="flex" alignItems="center" gap={2}>
+                        <Typography variant="h5" component="h1">
+                            Live AI Theater
+                        </Typography>
+                        <Chip
+                            label={state.session?.status || 'Unknown'}
+                            color={state.session?.status === 'active' ? 'success' : 'default'}
+                            size="small"
+                        />
+                        <Badge badgeContent={state.viewers.length} color="primary">
+                            <People />
+                        </Badge>
+                    </Box>
+
+                    <Box display="flex" alignItems="center" gap={1}>
+                        <Tooltip title="Compatibility Metrics">
+                            <IconButton onClick={toggleCompatibilityPanel}>
+                                <Assessment />
+                            </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title="Viewers">
+                            <IconButton onClick={toggleViewersPanel}>
+                                <Badge badgeContent={state.viewers.length} color="primary">
+                                    <People />
+                                </Badge>
+                            </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title={soundEnabled ? "Mute Sounds" : "Enable Sounds"}>
+                            <IconButton onClick={() => setSoundEnabled(!soundEnabled)}>
+                                {soundEnabled ? <VolumeUp /> : <VolumeOff />}
+                            </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
+                            <IconButton onClick={toggleFullscreen}>
+                                {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+                            </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title="Close Theater">
+                            <IconButton onClick={() => navigate('/matches')}>
+                                <Close />
+                            </IconButton>
+                        </Tooltip>
+                    </Box>
+                </Paper>
+
+                {/* Main Theater Content */}
+                <Box sx={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                    {/* Conversation Area */}
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        {/* Avatar Display */}
+                        <AvatarDisplay
+                            session={state.session}
+                            compatibility={state.compatibility}
+                        />
+
+                        {/* Conversation Display */}
+                        <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                            <ConversationDisplay
+                                messages={state.messages}
+                                userReactions={state.userReactions}
+                                onReaction={sendReaction}
+                                selectedMessage={state.selectedMessage}
+                            />
+                            <div ref={messagesEndRef} />
+                        </Box>
+
+                        {/* User Controls */}
+                        <UserControls
+                            session={state.session}
+                            onStartConversation={startConversation}
+                            onSendGuidance={() => setShowGuidanceDialog(true)}
+                            onRequestUpdate={() => websocketService.requestCompatibilityUpdate()}
+                            isConnected={state.isConnected}
+                        />
+                    </Box>
+
+                    {/* Side Panels */}
+                    <Drawer
+                        anchor="right"
+                        open={state.showCompatibilityPanel}
+                        onClose={toggleCompatibilityPanel}
+                        variant="temporary"
+                        sx={{
+                            '& .MuiDrawer-paper': {
+                                width: 400,
+                                position: 'relative',
+                                height: '100%'
+                            }
                         }}
                     >
-                        <Alert severity="warning" variant="filled">
-                            Connection lost. Attempting to reconnect...
-                        </Alert>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        <CompatibilityPanel
+                            compatibility={state.compatibility}
+                            session={state.session}
+                            onClose={toggleCompatibilityPanel}
+                        />
+                    </Drawer>
+
+                    <Drawer
+                        anchor="right"
+                        open={state.showViewersPanel}
+                        onClose={toggleViewersPanel}
+                        variant="temporary"
+                        sx={{
+                            '& .MuiDrawer-paper': {
+                                width: 300,
+                                position: 'relative',
+                                height: '100%'
+                            }
+                        }}
+                    >
+                        <ViewersPanel
+                            viewers={state.viewers}
+                            onClose={toggleViewersPanel}
+                        />
+                    </Drawer>
+                </Box>
+
+                {/* Guidance Dialog */}
+                <Dialog
+                    open={showGuidanceDialog}
+                    onClose={() => setShowGuidanceDialog(false)}
+                    maxWidth="sm"
+                    fullWidth
+                >
+                    <DialogTitle>Send Guidance to Your Avatar</DialogTitle>
+                    <DialogContent>
+                        <FormControl fullWidth sx={{ mb: 2, mt: 1 }}>
+                            <InputLabel>Select Avatar</InputLabel>
+                            <Select
+                                value={selectedAvatar}
+                                onChange={(e) => setSelectedAvatar(e.target.value)}
+                                label="Select Avatar"
+                            >
+                                <MenuItem value="user_avatar_1">Your Avatar</MenuItem>
+                                <MenuItem value="user_avatar_2">Match's Avatar</MenuItem>
+                            </Select>
+                        </FormControl>
+
+                        <TextField
+                            fullWidth
+                            multiline
+                            rows={3}
+                            label="Guidance Message"
+                            value={guidanceText}
+                            onChange={(e) => setGuidanceText(e.target.value)}
+                            placeholder="Provide guidance to your avatar about how to respond..."
+                            helperText="Your avatar will receive this guidance for the next response"
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setShowGuidanceDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={sendGuidance}
+                            variant="contained"
+                            disabled={!guidanceText.trim() || !selectedAvatar}
+                            startIcon={<Send />}
+                        >
+                            Send Guidance
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Connection Status Indicator */}
+                <AnimatePresence>
+                    {!state.isConnected && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 50 }}
+                            style={{
+                                position: 'absolute',
+                                bottom: 16,
+                                left: 16,
+                                zIndex: 1000
+                            }}
+                        >
+                            <Alert severity="warning" variant="filled">
+                                Connection lost. Attempting to reconnect...
+                            </Alert>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </Box>
         </Box>
     );
 };

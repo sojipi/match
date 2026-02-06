@@ -823,12 +823,45 @@ async def start_ai_conversation(session_id: str, db: AsyncSession):
         logger.info(f"AI conversation completed for session {session_id}")
 
     except Exception as e:
-        logger.error(f"Error in AI conversation: {e}", exc_info=True)
-        await manager.broadcast_to_session({
-            "type": "error",
-            "message": f"Conversation error: {str(e)}",
-            "timestamp": datetime.utcnow().isoformat()
-        }, session_id)
+        error_str = str(e)
+        logger.error(f"Error in AI conversation: {error_str}", exc_info=True)
+        
+        # Check if it's a Gemini quota error
+        if "GEMINI_QUOTA_EXCEEDED" in error_str or "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+            # Mark session as terminated due to quota
+            await db.execute(
+                update(ConversationSession)
+                .where(ConversationSession.id == session_id)
+                .values(
+                    status=SessionStatus.TERMINATED.value,
+                    ended_at=datetime.utcnow()
+                )
+            )
+            await db.commit()
+            
+            # Broadcast quota exceeded error
+            await manager.broadcast_to_session({
+                "type": "gemini_quota_exceeded",
+                "message": "Gemini API quota limit reached",
+                "details": "The system's Gemini API Key has reached its daily usage limit. Please configure your own API Key to continue using AI conversation features.",
+                "action": "configure_api_key",
+                "timestamp": datetime.utcnow().isoformat()
+            }, session_id)
+            
+            # Also send session status change
+            await manager.broadcast_to_session({
+                "type": "session_status_change",
+                "status": "terminated",
+                "reason": "quota_exceeded",
+                "message": "Conversation stopped due to API quota limit",
+                "timestamp": datetime.utcnow().isoformat()
+            }, session_id)
+        else:
+            await manager.broadcast_to_session({
+                "type": "error",
+                "message": f"Conversation error: {error_str}",
+                "timestamp": datetime.utcnow().isoformat()
+            }, session_id)
 
 
 async def handle_user_guidance(

@@ -37,6 +37,7 @@ class User(Base):
     # Settings
     privacy_settings = Column(JSON, default=dict)
     notification_preferences = Column(JSON, default=dict)
+    gemini_api_key = Column(String(255), nullable=True)  # User's personal Gemini API key
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

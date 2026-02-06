@@ -11,6 +11,7 @@ import MatchesPage from './pages/MatchesPage';
 import NotificationsPage from './pages/NotificationsPage';
 import LiveMatchingTheaterPage from './pages/LiveMatchingTheaterPage';
 import WebSocketTestPage from './pages/WebSocketTestPage';
+import SettingsPage from './pages/SettingsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -126,7 +127,7 @@ const App: React.FC = () => {
                 element={
                     <ProtectedRoute>
                         <AppLayout>
-                            <div>Settings Page - Coming Soon</div>
+                            <SettingsPage />
                         </AppLayout>
                     </ProtectedRoute>
                 }

@@ -133,6 +133,7 @@ export type WebSocketEventType =
     | 'conversation_starting'
     | 'feedback_received'
     | 'guidance_sent'
+    | 'gemini_quota_exceeded'
     | 'error'
     | 'ping'
     | 'pong';
@@ -155,6 +156,9 @@ export interface TheaterState {
     isLoading: boolean;
     showCompatibilityPanel: boolean;
     showViewersPanel: boolean;
+    showCompletionDialog: boolean;
+    showQuotaExceededDialog: boolean;
+    quotaErrorDetails?: any;
     selectedMessage?: string;
 }
 

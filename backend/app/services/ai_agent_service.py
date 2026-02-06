@@ -44,11 +44,12 @@ logger = logging.getLogger(__name__)
 class UserAvatarAgent:
     """AI agent representing a user's personality in conversations."""
     
-    def __init__(self, avatar: AIAvatar, user: User):
+    def __init__(self, avatar: AIAvatar, user: User, user_api_key: str = None):
         self.avatar = avatar
         self.user = user
         self.agent_id = f"user_avatar_{avatar.id}"
         self.name = avatar.name or f"{user.first_name}'s Avatar"
+        self.user_api_key = user_api_key  # User's personal Gemini API key
         
         # Initialize personality-based configuration
         self.personality_config = self._build_personality_config()
@@ -210,8 +211,15 @@ class UserAvatarAgent:
                         return Msg(name=self.name, content=content, role="assistant")
                     
                     except Exception as e:
-                        logger.error(f"Error in AgentScope reply: {e}")
-                        # Fallback response
+                        error_str = str(e)
+                        logger.error(f"Error in AgentScope reply: {error_str}")
+                        
+                        # Check if it's a quota/rate limit error
+                        if '429' in error_str or 'RESOURCE_EXHAUSTED' in error_str or 'quota' in error_str.lower():
+                            # Raise a specific exception for quota errors
+                            raise Exception("GEMINI_QUOTA_EXCEEDED")
+                        
+                        # Fallback response for other errors
                         content = "I'm looking forward to our conversation!" if x is None else "That sounds fascinating!"
                         return Msg(name=self.name, content=content, role="assistant")
             
@@ -236,9 +244,13 @@ Remember: You are representing a real person's personality, so be respectful, au
 
             # Initialize Gemini client if available
             gemini_client = None
-            if GEMINI_AVAILABLE and settings.GEMINI_API_KEY:
+            if GEMINI_AVAILABLE:
                 try:
-                    gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+                    # Use user's API key if available, otherwise use system key
+                    api_key = self.user_api_key if self.user_api_key else settings.GEMINI_API_KEY
+                    if api_key:
+                        gemini_client = genai.Client(api_key=api_key)
+                        logger.info(f"Initialized Gemini client for {self.name} with {'user' if self.user_api_key else 'system'} API key")
                 except Exception as e:
                     logger.warning(f"Failed to create Gemini client: {e}")
 
@@ -256,13 +268,10 @@ Remember: You are representing a real person's personality, so be respectful, au
     
     async def generate_response(self, conversation_history: List[Dict], context: Dict = None) -> str:
         """Generate a response based on conversation history and personality."""
-        try:
-            if self.agentscope_agent and AGENTSCOPE_AVAILABLE and is_ai_service_available("agentscope"):
-                return await self._generate_agentscope_response(conversation_history, context)
-            else:
-                return await self._generate_fallback_response(conversation_history, context)
-        except Exception as e:
-            logger.error(f"Error generating response for {self.agent_id}: {e}")
+        # Don't catch quota errors here - let them propagate
+        if self.agentscope_agent and AGENTSCOPE_AVAILABLE and is_ai_service_available("agentscope"):
+            return await self._generate_agentscope_response(conversation_history, context)
+        else:
             return await self._generate_fallback_response(conversation_history, context)
     
     async def _generate_agentscope_response(self, conversation_history: List[Dict], context: Dict = None) -> str:
@@ -286,7 +295,13 @@ Remember: You are representing a real person's personality, so be respectful, au
                 return response.content if hasattr(response, 'content') else str(response)
 
         except Exception as e:
-            logger.error(f"AgentScope response generation failed: {e}")
+            error_str = str(e)
+            logger.error(f"AgentScope response generation failed: {error_str}")
+            
+            # Re-raise quota errors to stop the conversation
+            if "GEMINI_QUOTA_EXCEEDED" in error_str:
+                raise
+            
             return await self._generate_fallback_response(conversation_history, context)
     
     async def _generate_fallback_response(self, conversation_history: List[Dict], context: Dict = None) -> str:
@@ -724,11 +739,14 @@ class AIAgentService:
             if not avatar:
                 raise ValueError(f"Avatar for user {user_id} not found")
             
-            # Create agent
-            agent = UserAvatarAgent(avatar, user)
+            # Get user's Gemini API key if available
+            user_api_key = getattr(user, 'gemini_api_key', None)
+            
+            # Create agent with user's API key
+            agent = UserAvatarAgent(avatar, user, user_api_key=user_api_key)
             self.active_agents[user_id] = agent
             
-            logger.info(f"Created avatar agent for user {user_id}")
+            logger.info(f"Created avatar agent for user {user_id} with {'custom' if user_api_key else 'system'} API key")
             return agent
             
         except Exception as e:
