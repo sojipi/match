@@ -135,29 +135,142 @@ async def end_session(
     }
 
 
+@router.get("/match/{match_id}/sessions")
+async def get_match_sessions(
+    match_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get all conversation sessions for a match."""
+    from app.models.conversation import ConversationSession as DBConversationSession
+    from sqlalchemy import or_, and_, desc
+    
+    try:
+        # Verify match exists and user has access
+        result = await db.execute(
+            select(Match).where(Match.id == match_id)
+        )
+        match = result.scalar_one_or_none()
+        
+        if not match:
+            raise HTTPException(status_code=404, detail="Match not found")
+        
+        # Verify user is part of this match
+        if str(match.user1_id) != str(current_user.id) and str(match.user2_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Access denied to this match")
+        
+        # Get all sessions for this match
+        sessions_result = await db.execute(
+            select(DBConversationSession)
+            .where(
+                and_(
+                    or_(
+                        and_(
+                            DBConversationSession.user1_id == match.user1_id,
+                            DBConversationSession.user2_id == match.user2_id
+                        ),
+                        and_(
+                            DBConversationSession.user1_id == match.user2_id,
+                            DBConversationSession.user2_id == match.user1_id
+                        )
+                    )
+                )
+            )
+            .order_by(desc(DBConversationSession.created_at))
+        )
+        sessions = sessions_result.scalars().all()
+        
+        return {
+            "match_id": match_id,
+            "sessions": [
+                {
+                    "session_id": str(session.id),
+                    "status": session.status,
+                    "session_type": session.session_type,
+                    "started_at": session.started_at.isoformat() if session.started_at else None,
+                    "ended_at": session.ended_at.isoformat() if session.ended_at else None,
+                    "message_count": session.message_count or 0,
+                    "created_at": session.created_at.isoformat()
+                }
+                for session in sessions
+            ],
+            "total_count": len(sessions)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get sessions: {str(e)}")
+
+
 @router.get("/{session_id}/messages")
 async def get_session_messages(
     session_id: str,
     limit: int = 50,
     offset: int = 0,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get session conversation messages."""
-    # This is a placeholder - implement actual message retrieval
-    mock_messages = [
-        ConversationMessage(
-            message_id=f"msg-{i}",
-            sender_type="user_avatar",
-            sender_name="Alex's Avatar",
-            content=f"This is message {i}",
-            timestamp=datetime.utcnow(),
-            emotion_indicators=["friendly", "curious"]
-        )
-        for i in range(1, 6)
-    ]
+    from app.models.conversation import ConversationMessage as DBConversationMessage
+    from sqlalchemy import desc
     
-    return {
-        "messages": mock_messages[offset:offset + limit],
-        "total_count": len(mock_messages),
-        "has_more": offset + limit < len(mock_messages)
-    }
+    try:
+        # Verify session exists and user has access
+        session_result = await db.execute(
+            select(ConversationSession).where(ConversationSession.id == session_id)
+        )
+        session = session_result.scalar_one_or_none()
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        # Verify user is part of this session
+        if str(session.user1_id) != str(current_user.id) and str(session.user2_id) != str(current_user.id):
+            raise HTTPException(status_code=403, detail="Access denied to this session")
+        
+        # Get total count
+        count_result = await db.execute(
+            select(DBConversationMessage).where(DBConversationMessage.session_id == session_id)
+        )
+        total_count = len(count_result.scalars().all())
+        
+        # Get messages with pagination
+        messages_result = await db.execute(
+            select(DBConversationMessage)
+            .where(DBConversationMessage.session_id == session_id)
+            .order_by(DBConversationMessage.timestamp)
+            .offset(offset)
+            .limit(limit)
+        )
+        messages = messages_result.scalars().all()
+        
+        # Convert to response format
+        message_list = [
+            ConversationMessage(
+                message_id=str(msg.id),
+                sender_type=msg.sender_type,
+                sender_name=msg.sender_name,
+                content=msg.content,
+                timestamp=msg.timestamp,
+                emotion_indicators=msg.emotion_indicators or []
+            )
+            for msg in messages
+        ]
+        
+        return {
+            "messages": message_list,
+            "total_count": total_count,
+            "has_more": offset + limit < total_count,
+            "session": {
+                "session_id": str(session.id),
+                "status": session.status,
+                "started_at": session.started_at.isoformat() if session.started_at else None,
+                "ended_at": session.ended_at.isoformat() if session.ended_at else None
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get messages: {str(e)}")

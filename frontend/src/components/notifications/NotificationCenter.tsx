@@ -89,7 +89,7 @@ const NotificationCenter: React.FC = () => {
             setLoading(true);
             setError(null);
 
-            const response: NotificationListResponse = await api.get('/api/v1/notifications?limit=20');
+            const response: NotificationListResponse = await api.get('/api/v1/notifications/?limit=20');
             setNotifications(response.notifications);
             setUnreadCount(response.unread_count);
         } catch (err: any) {

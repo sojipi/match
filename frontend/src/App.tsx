@@ -13,6 +13,8 @@ import LiveMatchingTheaterPage from './pages/LiveMatchingTheaterPage';
 import WebSocketTestPage from './pages/WebSocketTestPage';
 import SettingsPage from './pages/SettingsPage';
 import CompatibilityReportPage from './pages/CompatibilityReportPage';
+import ConversationHistoryPage from './pages/ConversationHistoryPage';
+import MatchConversationsPage from './pages/MatchConversationsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -139,6 +141,26 @@ const App: React.FC = () => {
                     <ProtectedRoute>
                         <AppLayout>
                             <CompatibilityReportPage />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/match/:matchId/conversations"
+                element={
+                    <ProtectedRoute>
+                        <AppLayout>
+                            <MatchConversationsPage />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/conversation/:sessionId"
+                element={
+                    <ProtectedRoute>
+                        <AppLayout>
+                            <ConversationHistoryPage />
                         </AppLayout>
                     </ProtectedRoute>
                 }

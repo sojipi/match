@@ -41,29 +41,15 @@ def initialize_gemini() -> bool:
         import google.genai as genai
         
         if settings.GEMINI_API_KEY and settings.GEMINI_API_KEY != "your-gemini-api-key":
-            # Configure the client
-            client = genai.Client(api_key=settings.GEMINI_API_KEY)
-            
-            # Test the API connection with a valid model
+            # Just verify the client can be created, don't test the API
             try:
-                response = client.models.generate_content(
-                    model=get_gemini_model_name(),
-                    contents="Hello"
-                )
-                
-                if response and response.text:
-                    GEMINI_AVAILABLE = True
-                    logger.info("Gemini API initialized and tested successfully")
-                    return True
-                else:
-                    logger.warning("Gemini API test failed - no response received")
-                    return False
-            except Exception as test_error:
-                logger.warning(f"Gemini API test failed: {test_error}")
-                # Still mark as available if client creation succeeded
+                client = genai.Client(api_key=settings.GEMINI_API_KEY)
                 GEMINI_AVAILABLE = True
-                logger.info("Gemini API configured (test skipped)")
+                logger.info("Gemini API initialized successfully (API key configured)")
                 return True
+            except Exception as client_error:
+                logger.warning(f"Failed to create Gemini client: {client_error}")
+                return False
         else:
             logger.warning("Gemini API key not configured")
             return False

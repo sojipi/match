@@ -38,7 +38,8 @@ import {
     Report,
     Visibility,
     Schedule,
-    TrendingUp
+    TrendingUp,
+    History
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
@@ -134,6 +135,11 @@ const MatchesPage: React.FC = () => {
     const handleViewCompatibility = (match: MatchHistoryItem) => {
         // Navigate to compatibility report using the matched user's ID
         navigate(`/compatibility/${match.user.id}`);
+    };
+
+    const handleViewConversationHistory = (matchId: string) => {
+        // Navigate to sessions list for this match
+        navigate(`/match/${matchId}/conversations`);
     };
 
     const handleBlockUser = async (matchId: string) => {
@@ -529,6 +535,15 @@ const MatchesPage: React.FC = () => {
                 }}>
                     <Visibility sx={{ mr: 1 }} />
                     View Compatibility Report
+                </MenuItem>
+                <MenuItem onClick={() => {
+                    if (selectedMatchForMenu) {
+                        handleViewConversationHistory(selectedMatchForMenu.id);
+                    }
+                    handleMenuClose();
+                }}>
+                    <History sx={{ mr: 1 }} />
+                    View Conversation History
                 </MenuItem>
                 <MenuItem onClick={() => {
                     if (selectedMatchForMenu) {

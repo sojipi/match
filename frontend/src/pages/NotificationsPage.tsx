@@ -83,7 +83,7 @@ const NotificationsPage: React.FC = () => {
                 params.append('unread_only', 'true');
             }
 
-            const response: NotificationListResponse = await api.get(`/api/v1/notifications?${params}`);
+            const response: NotificationListResponse = await api.get(`/api/v1/notifications/?${params}`);
             setNotifications(response.notifications);
             setUnreadCount(response.unread_count);
         } catch (err: any) {
