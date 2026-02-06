@@ -53,13 +53,13 @@ export class WebSocketService {
 
                 ws.onclose = (event) => {
                     console.log('WebSocket connection closed:', event.code, event.reason);
-                    
+
                     // If the socket in the class is not this socket, it means we've already disconnected
                     // or reconnected, so we shouldn't attempt to reconnect for this closed socket.
                     if (this.socket !== ws) {
                         return;
                     }
-                    
+
                     this.isConnecting = false;
 
                     // Attempt reconnection if not intentional
@@ -211,6 +211,16 @@ export class WebSocketService {
     startConversation(): void {
         this.send({
             type: 'start_conversation',
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    /**
+     * End conversation manually
+     */
+    endConversation(): void {
+        this.send({
+            type: 'end_conversation',
             timestamp: new Date().toISOString()
         });
     }

@@ -33,10 +33,10 @@ try:
     GEMINI_AVAILABLE = True
 except ImportError:
     GEMINI_AVAILABLE = False
-    logging.warning("Google Generative AI not available. Using mock responses.")
+    logging.warning("Google Gen AI not available. Using mock responses.")
 
 # Import AI config to get service status
-from app.core.ai_config import is_ai_service_available
+from app.core.ai_config import is_ai_service_available, get_gemini_model_name
 
 logger = logging.getLogger(__name__)
 
@@ -173,24 +173,47 @@ class UserAvatarAgent:
         """Initialize AgentScope agent with personality configuration."""
         if not AGENTSCOPE_AVAILABLE:
             return
-        
+
         try:
-            # Create a custom agent class for user avatars
+            # Create a custom agent class for user avatars that integrates with Gemini
             class UserAvatarAgentScope(AgentBase):
-                def __init__(self, name: str, sys_prompt: str, model_config: dict):
-                    super().__init__(name=name)
+                def __init__(self, name: str, sys_prompt: str, model_config: dict, gemini_client=None):
+                    super().__init__()  # Don't pass name to parent
+                    self.name = name  # Set name as instance attribute
                     self.sys_prompt = sys_prompt
                     self.model_config = model_config
-                
-                def reply(self, x: Msg = None) -> Msg:
-                    """Generate reply based on input message."""
-                    if x is None:
-                        content = "Hello! I'm excited to get to know you!"
-                    else:
-                        # Simple response generation for now
-                        content = f"That's interesting! I'd love to hear more about that."
+                    self.gemini_client = gemini_client
+
+                async def reply(self, x: Msg = None) -> Msg:
+                    """Generate reply based on input message using Gemini API."""
+                    try:
+                        if self.gemini_client and GEMINI_AVAILABLE:
+                            # Use Gemini API for actual response generation
+                            if x is None:
+                                prompt = f"{self.sys_prompt}\n\nGenerate a friendly introduction message."
+                            else:
+                                prompt = f"{self.sys_prompt}\n\nPrevious message: {x.content}\n\nRespond naturally and authentically:"
+                            
+                            response = self.gemini_client.models.generate_content(
+                                model=get_gemini_model_name(),
+                                contents=prompt
+                            )
+                            
+                            content = response.text if response.text else "I'm excited to get to know you better!"
+                        else:
+                            # Fallback response
+                            if x is None:
+                                content = "Hello! I'm excited to get to know you!"
+                            else:
+                                content = "That's really interesting! I'd love to hear more about that."
+                        
+                        return Msg(name=self.name, content=content, role="assistant")
                     
-                    return Msg(name=self.name, content=content, role="assistant")
+                    except Exception as e:
+                        logger.error(f"Error in AgentScope reply: {e}")
+                        # Fallback response
+                        content = "I'm looking forward to our conversation!" if x is None else "That sounds fascinating!"
+                        return Msg(name=self.name, content=content, role="assistant")
             
             # Create system prompt combining personality and communication style
             system_prompt = f"""You are {self.name}, an AI representation of a real person in a dating conversation.
@@ -206,14 +229,25 @@ Important guidelines:
 - Ask thoughtful questions based on your personality
 - Share appropriate personal insights that reflect your values
 - Maintain consistency with your established personality throughout the conversation
+- Keep responses conversational and natural (1-3 sentences typically)
+- Show curiosity about the other person's experiences and thoughts
 
 Remember: You are representing a real person's personality, so be respectful, authentic, and engaging."""
+
+            # Initialize Gemini client if available
+            gemini_client = None
+            if GEMINI_AVAILABLE and settings.GEMINI_API_KEY:
+                try:
+                    gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+                except Exception as e:
+                    logger.warning(f"Failed to create Gemini client: {e}")
 
             # Initialize the agent
             self.agentscope_agent = UserAvatarAgentScope(
                 name=self.name,
                 sys_prompt=system_prompt,
-                model_config={}
+                model_config={},
+                gemini_client=gemini_client
             )
             
         except Exception as e:
@@ -238,19 +272,19 @@ Remember: You are representing a real person's personality, so be respectful, au
             if conversation_history:
                 last_message = conversation_history[-1]
                 input_msg = Msg(
-                    name=last_message.get("sender_name", "Unknown"), 
-                    content=last_message.get("content", ""), 
+                    name=last_message.get("sender_name", "Unknown"),
+                    content=last_message.get("content", ""),
                     role="user"
                 )
-                
-                # Generate response using the reply method
-                response = self.agentscope_agent.reply(input_msg)
+
+                # Generate response using the reply method (now async)
+                response = await self.agentscope_agent.reply(input_msg)
                 return response.content if hasattr(response, 'content') else str(response)
             else:
                 # First message - introduce yourself
-                response = self.agentscope_agent.reply(None)
+                response = await self.agentscope_agent.reply(None)
                 return response.content if hasattr(response, 'content') else str(response)
-                
+
         except Exception as e:
             logger.error(f"AgentScope response generation failed: {e}")
             return await self._generate_fallback_response(conversation_history, context)
@@ -265,8 +299,7 @@ Remember: You are representing a real person's personality, so be respectful, au
     async def _generate_gemini_response(self, conversation_history: List[Dict], context: Dict = None) -> str:
         """Generate response using Gemini API directly."""
         try:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            model = genai.GenerativeModel('gemini-pro')
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
             
             # Build prompt with personality and conversation history
             prompt = f"""You are {self.name}, representing someone in a dating conversation.
@@ -284,7 +317,10 @@ Conversation so far:
             
             prompt += f"\n{self.name}: "
             
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model=get_gemini_model_name(),
+                contents=prompt
+            )
             return response.text if response.text else "I'm not sure how to respond to that."
             
         except Exception as e:
@@ -352,27 +388,48 @@ class MatchMakerAgent:
         """Initialize AgentScope matchmaker agent."""
         if not AGENTSCOPE_AVAILABLE:
             return
-        
+
         try:
-            # Create a custom matchmaker agent class
+            # Create a custom matchmaker agent class that integrates with Gemini
             class MatchMakerAgentScope(AgentBase):
-                def __init__(self, name: str, sys_prompt: str):
-                    super().__init__(name=name)
+                def __init__(self, name: str, sys_prompt: str, gemini_client=None):
+                    super().__init__()  # Don't pass name to parent
+                    self.name = name  # Set name as instance attribute
                     self.sys_prompt = sys_prompt
-                
-                def reply(self, x: Msg = None) -> Msg:
-                    """Generate facilitation response."""
-                    facilitation_responses = [
-                        "That's a wonderful way to get to know each other! What else would you like to share?",
-                        "I can see some interesting connections forming. What are your thoughts on that?",
-                        "This is going great! Let's explore what you both value most in relationships.",
-                        "I love seeing how you both approach this topic. What draws you to each other so far?",
-                        "You're both sharing so authentically. What would you like to discover about each other next?"
-                    ]
+                    self.gemini_client = gemini_client
+
+                async def reply(self, x: Msg = None) -> Msg:
+                    """Generate facilitation response using Gemini API."""
+                    try:
+                        if self.gemini_client and GEMINI_AVAILABLE:
+                            # Use Gemini API for intelligent facilitation
+                            context = x.content if x else "Start of conversation"
+                            prompt = f"{self.sys_prompt}\n\nConversation context: {context}\n\nProvide helpful facilitation:"
+                            
+                            response = self.gemini_client.models.generate_content(
+                                model=get_gemini_model_name(),
+                                contents=prompt
+                            )
+                            
+                            content = response.text if response.text else "What would you both like to explore next?"
+                        else:
+                            # Fallback facilitation responses
+                            facilitation_responses = [
+                                "That's a wonderful way to get to know each other! What else would you like to share?",
+                                "I can see some interesting connections forming. What are your thoughts on that?",
+                                "This is going great! Let's explore what you both value most in relationships.",
+                                "I love seeing how you both approach this topic. What draws you to each other so far?",
+                                "You're both sharing so authentically. What would you like to discover about each other next?"
+                            ]
+
+                            import random
+                            content = random.choice(facilitation_responses)
+                        
+                        return Msg(name=self.name, content=content, role="assistant")
                     
-                    import random
-                    content = random.choice(facilitation_responses)
-                    return Msg(name=self.name, content=content, role="assistant")
+                    except Exception as e:
+                        logger.error(f"Error in MatchMaker reply: {e}")
+                        return Msg(name=self.name, content="What would you both like to explore next?", role="assistant")
             
             system_prompt = """You are a professional matchmaker facilitating a conversation between two people who are getting to know each other for potential romantic compatibility.
 
@@ -391,12 +448,22 @@ Guidelines:
 - Ask open-ended questions that reveal values, interests, and personality
 - Celebrate moments of connection between the participants
 - Be sensitive to cultural differences and personal boundaries
+- Keep responses brief and natural (1-2 sentences typically)
 
 Remember: Your goal is to help two people discover if they're compatible, not to force a connection."""
 
+            # Initialize Gemini client if available
+            gemini_client = None
+            if GEMINI_AVAILABLE and settings.GEMINI_API_KEY:
+                try:
+                    gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+                except Exception as e:
+                    logger.warning(f"Failed to create Gemini client for MatchMaker: {e}")
+
             self.agentscope_agent = MatchMakerAgentScope(
                 name=self.name,
-                sys_prompt=system_prompt
+                sys_prompt=system_prompt,
+                gemini_client=gemini_client
             )
             
         except Exception as e:
@@ -471,8 +538,7 @@ Remember: Your goal is to help two people discover if they're compatible, not to
     async def _generate_gemini_facilitation(self, conversation_history: List[Dict], participants: List[str]) -> str:
         """Generate facilitation using Gemini API."""
         try:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            model = genai.GenerativeModel('gemini-pro')
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
             
             prompt = f"""You are a professional matchmaker facilitating a conversation between {' and '.join(participants)}.
 
@@ -487,7 +553,10 @@ Conversation so far:
 As the matchmaker, provide a helpful comment or question to keep the conversation flowing naturally. Be warm and encouraging, and help them discover compatibility.
 """
             
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model=get_gemini_model_name(),
+                contents=prompt
+            )
             return response.text if response.text else "What would you both like to explore next in getting to know each other?"
             
         except Exception as e:
@@ -541,8 +610,7 @@ class ScenarioGenerator:
     async def _generate_gemini_scenario(self, participant_data: List[Dict], scenario_type: str) -> Dict[str, Any]:
         """Generate scenario using Gemini API."""
         try:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            model = genai.GenerativeModel('gemini-pro')
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
             
             prompt = f"""Generate a realistic relationship scenario for compatibility testing between two people.
 
@@ -568,7 +636,10 @@ Format the response as JSON with:
 - success_criteria: What indicates good compatibility in this scenario
 """
             
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model=get_gemini_model_name(),
+                contents=prompt
+            )
             
             # Try to parse JSON response
             try:

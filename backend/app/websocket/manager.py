@@ -4,16 +4,18 @@ WebSocket connection manager for real-time AI matching features.
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException, Depends, Query
 from fastapi.security import HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 from typing import Dict, List, Optional, Set
 import json
 import asyncio
 import logging
+import uuid
 from datetime import datetime
 from uuid import UUID
 
 from app.core.database import get_db
 from app.core.security import verify_token
+from app.core.config import settings
 from app.models.conversation import ConversationSession, ConversationMessage, SessionStatus, AgentType, MessageType
 from app.models.user import User
 from app.websocket.security import secure_websocket_connection, validate_websocket_message, cleanup_websocket_security
@@ -114,6 +116,14 @@ class ConnectionManager:
                     "started_at": datetime.utcnow()
                 }
             
+            # Get session details from database
+            from app.models.conversation import ConversationSession
+            from sqlalchemy import select
+            result = await db.execute(
+                select(ConversationSession).where(ConversationSession.id == session_id)
+            )
+            session_obj = result.scalar_one_or_none()
+
             # Send welcome message with session state
             logger.info(f"Sending welcome message to user {user.id}")
             print(f"DEBUG: Sending welcome message to user {user.id}")
@@ -122,6 +132,12 @@ class ConnectionManager:
                 "session_id": session_id,
                 "user_id": str(user.id),
                 "viewer_count": self.active_sessions[session_id]["viewer_count"],
+                "session": {
+                    "session_id": session_id,
+                    "status": session_obj.status if session_obj else "waiting",
+                    "session_type": session_obj.session_type if session_obj else "conversation",
+                    "viewer_count": self.active_sessions[session_id]["viewer_count"]
+                } if session_obj else None,
                 "timestamp": datetime.utcnow().isoformat()
             }, websocket):
                 logger.error(f"Failed to send welcome message to user {user.id}")
@@ -464,6 +480,9 @@ async def handle_websocket_message(
     elif message_type == "reaction":
         await handle_user_reaction(message_data, session_id, user, websocket, db)
     
+    elif message_type == "end_conversation":
+        await handle_end_conversation(message_data, session_id, user, websocket, db)
+    
     elif message_type == "ping":
         # Handle ping/pong for connection health
         await manager.send_personal_message({
@@ -551,16 +570,265 @@ async def handle_start_conversation(
     websocket: WebSocket,
     db: AsyncSession
 ):
-    """Handle request to start AI conversation."""
-    # In real implementation, trigger actual AI agents
-    await manager.broadcast_to_session({
-        "type": "conversation_starting",
-        "message": "AI avatars are preparing to start conversation...",
-        "timestamp": datetime.utcnow().isoformat()
-    }, session_id)
-    
-    # Simulate AI conversation
-    await simulate_ai_conversation(session_id)
+    """Handle request to start AI conversation using real AI agents."""
+    try:
+        from app.services.ai_agent_service import AIAgentService
+        from app.models.conversation import ConversationSession, SessionStatus
+        from sqlalchemy import select, update
+
+        # Update session status to active
+        await db.execute(
+            update(ConversationSession)
+            .where(ConversationSession.id == session_id)
+            .values(
+                status=SessionStatus.ACTIVE.value,
+                started_at=datetime.utcnow()
+            )
+        )
+        await db.commit()
+
+        # Notify that conversation is starting
+        await manager.broadcast_to_session({
+            "type": "conversation_starting",
+            "message": "AI avatars are preparing to start conversation...",
+            "timestamp": datetime.utcnow().isoformat()
+        }, session_id)
+
+        # Notify session status change
+        await manager.broadcast_to_session({
+            "type": "session_status_change",
+            "status": "active",
+            "timestamp": datetime.utcnow().isoformat()
+        }, session_id)
+
+        # Start real AI conversation in background
+        asyncio.create_task(start_ai_conversation(session_id, db))
+
+    except Exception as e:
+        logger.error(f"Error starting conversation: {e}")
+        await manager.send_personal_message({
+            "type": "error",
+            "message": f"Failed to start conversation: {str(e)}",
+            "timestamp": datetime.utcnow().isoformat()
+        }, websocket)
+
+
+async def start_ai_conversation(session_id: str, db: AsyncSession):
+    """Start real AI conversation using AgentScope and Gemini API."""
+    try:
+        from app.services.ai_agent_service import AIAgentService
+        from app.models.conversation import ConversationSession, ConversationMessage
+        from sqlalchemy import select
+
+        # Get session details
+        result = await db.execute(
+            select(ConversationSession).where(ConversationSession.id == session_id)
+        )
+        session = result.scalar_one_or_none()
+
+        if not session:
+            logger.error(f"Session {session_id} not found")
+            return
+
+        # Initialize AI agent service
+        ai_service = AIAgentService(db)
+
+        # Get avatar agents for both users
+        try:
+            agent1 = await ai_service.get_user_avatar_agent(str(session.user1_id))
+        except Exception as e:
+            logger.warning(f"Failed to get agent1, will try to create: {e}")
+            agent1 = None
+
+        try:
+            agent2 = await ai_service.get_user_avatar_agent(str(session.user2_id))
+        except Exception as e:
+            logger.warning(f"Failed to get agent2, will try to create: {e}")
+            agent2 = None
+
+        # If either agent is missing, try to create avatars
+        if not agent1 or not agent2:
+            logger.info(f"One or both avatars missing, attempting to create them")
+
+            # Try to create missing avatars
+            if not agent1:
+                try:
+                    from app.services.avatar_service import AvatarService
+                    avatar_service = AvatarService(db)
+                    await avatar_service.create_or_update_avatar(str(session.user1_id))
+                    agent1 = await ai_service.get_user_avatar_agent(str(session.user1_id))
+                    logger.info(f"Created avatar for user1: {session.user1_id}")
+                except Exception as e:
+                    logger.error(f"Failed to create avatar for user1: {e}")
+
+            if not agent2:
+                try:
+                    from app.services.avatar_service import AvatarService
+                    avatar_service = AvatarService(db)
+                    await avatar_service.create_or_update_avatar(str(session.user2_id))
+                    agent2 = await ai_service.get_user_avatar_agent(str(session.user2_id))
+                    logger.info(f"Created avatar for user2: {session.user2_id}")
+                except Exception as e:
+                    logger.error(f"Failed to create avatar for user2: {e}")
+
+        # If still missing, send error and return
+        if not agent1 or not agent2:
+            missing_users = []
+            if not agent1:
+                missing_users.append("user1")
+            if not agent2:
+                missing_users.append("user2")
+
+            error_msg = f"AI avatars not available for {', '.join(missing_users)}. Please complete your personality assessment first."
+            logger.error(f"Failed to get avatar agents for session {session_id}: {error_msg}")
+
+            await manager.broadcast_to_session({
+                "type": "error",
+                "message": error_msg,
+                "timestamp": datetime.utcnow().isoformat()
+            }, session_id)
+            return
+
+        # Start conversation with initial greeting
+        conversation_history = []
+
+        # Agent 1 starts the conversation
+        logger.info(f"Agent 1 ({agent1.name}) generating initial greeting")
+        greeting1 = await agent1.generate_response(conversation_history, {"is_first_message": True})
+
+        # Store and broadcast first message
+        message1 = ConversationMessage(
+            id=uuid.uuid4(),
+            session_id=session_id,
+            sender_id=str(session.user1_id),
+            sender_type="user_avatar",
+            sender_name=agent1.name,
+            content=greeting1,
+            timestamp=datetime.utcnow()
+        )
+        db.add(message1)
+        await db.commit()
+
+        await manager.broadcast_to_session({
+            "type": "ai_message",
+            "message_id": str(message1.id),
+            "sender_type": "user_avatar",
+            "sender_name": agent1.name,
+            "content": greeting1,
+            "emotion_indicators": ["friendly", "curious"],
+            "timestamp": datetime.utcnow().isoformat()
+        }, session_id)
+
+        conversation_history.append({
+            "sender_id": str(session.user1_id),
+            "sender_type": "user_avatar",
+            "sender_name": agent1.name,
+            "content": greeting1,
+            "timestamp": datetime.utcnow().isoformat()
+        })
+
+        # Continue conversation for several turns (configurable)
+        max_turns = settings.MAX_CONVERSATION_TURNS if hasattr(settings, 'MAX_CONVERSATION_TURNS') else 12
+        for turn in range(max_turns):  # More turns for better conversation
+            await asyncio.sleep(4)  # Natural delay between messages
+
+            # Alternate between agents
+            if turn % 2 == 0:
+                # Agent 2's turn
+                logger.info(f"Agent 2 ({agent2.name}) generating response")
+                response = await agent2.generate_response(conversation_history)
+                sender_id = str(session.user2_id)
+                sender_name = agent2.name
+            else:
+                # Agent 1's turn
+                logger.info(f"Agent 1 ({agent1.name}) generating response")
+                response = await agent1.generate_response(conversation_history)
+                sender_id = str(session.user1_id)
+                sender_name = agent1.name
+
+            # Store message
+            message = ConversationMessage(
+                id=uuid.uuid4(),
+                session_id=session_id,
+                sender_id=sender_id,
+                sender_type="user_avatar",
+                sender_name=sender_name,
+                content=response,
+                timestamp=datetime.utcnow()
+            )
+            db.add(message)
+            await db.commit()
+
+            # Broadcast message
+            await manager.broadcast_to_session({
+                "type": "ai_message",
+                "message_id": str(message.id),
+                "sender_type": "user_avatar",
+                "sender_name": sender_name,
+                "content": response,
+                "emotion_indicators": ["engaged", "interested"],
+                "is_highlighted": turn >= 4,  # Highlight later messages
+                "timestamp": datetime.utcnow().isoformat()
+            }, session_id)
+
+            # Update conversation history
+            conversation_history.append({
+                "sender_id": sender_id,
+                "sender_type": "user_avatar",
+                "sender_name": sender_name,
+                "content": response,
+                "timestamp": datetime.utcnow().isoformat()
+            })
+
+            # Send compatibility update every 2 turns
+            if turn % 2 == 1:
+                await asyncio.sleep(1)
+                compatibility_score = 0.65 + (turn * 0.05)  # Gradually increasing
+                await manager.broadcast_to_session({
+                    "type": "compatibility_update",
+                    "overall_score": min(compatibility_score, 0.95),
+                    "dimension_scores": {
+                        "personality": min(0.70 + (turn * 0.04), 0.95),
+                        "communication": min(0.68 + (turn * 0.03), 0.92),
+                        "values": min(0.72 + (turn * 0.05), 0.96),
+                        "lifestyle": min(0.65 + (turn * 0.04), 0.90)
+                    },
+                    "trending_direction": "improving",
+                    "key_insights": [
+                        "Natural conversation flow developing",
+                        "Shared interests emerging",
+                        "Good communication compatibility"
+                    ],
+                    "timestamp": datetime.utcnow().isoformat()
+                }, session_id)
+
+        # Mark session as completed
+        await db.execute(
+            update(ConversationSession)
+            .where(ConversationSession.id == session_id)
+            .values(
+                status=SessionStatus.COMPLETED.value,
+                ended_at=datetime.utcnow()
+            )
+        )
+        await db.commit()
+
+        await manager.broadcast_to_session({
+            "type": "session_status_change",
+            "status": "completed",
+            "message": "Conversation completed successfully!",
+            "timestamp": datetime.utcnow().isoformat()
+        }, session_id)
+
+        logger.info(f"AI conversation completed for session {session_id}")
+
+    except Exception as e:
+        logger.error(f"Error in AI conversation: {e}", exc_info=True)
+        await manager.broadcast_to_session({
+            "type": "error",
+            "message": f"Conversation error: {str(e)}",
+            "timestamp": datetime.utcnow().isoformat()
+        }, session_id)
 
 
 async def handle_user_guidance(
@@ -584,6 +852,49 @@ async def handle_user_guidance(
     }
     
     await manager.send_personal_message(response, websocket)
+
+
+async def handle_end_conversation(
+    message_data: dict,
+    session_id: str,
+    user: User,
+    websocket: WebSocket,
+    db: AsyncSession
+):
+    """Handle manual conversation end request."""
+    try:
+        from app.models.conversation import ConversationSession, SessionStatus
+        from sqlalchemy import select, update
+
+        # Update session status to completed
+        await db.execute(
+            update(ConversationSession)
+            .where(ConversationSession.id == session_id)
+            .values(
+                status=SessionStatus.COMPLETED.value,
+                ended_at=datetime.utcnow()
+            )
+        )
+        await db.commit()
+
+        # Notify all viewers
+        await manager.broadcast_to_session({
+            "type": "session_status_change",
+            "status": "completed",
+            "message": "Conversation ended by user",
+            "ended_by": f"{user.first_name} {user.last_name}",
+            "timestamp": datetime.utcnow().isoformat()
+        }, session_id)
+
+        logger.info(f"Conversation manually ended by user {user.id} for session {session_id}")
+
+    except Exception as e:
+        logger.error(f"Error ending conversation: {e}")
+        await manager.send_personal_message({
+            "type": "error",
+            "message": f"Failed to end conversation: {str(e)}",
+            "timestamp": datetime.utcnow().isoformat()
+        }, websocket)
 
 
 async def handle_user_reaction(

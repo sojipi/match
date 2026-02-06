@@ -112,9 +112,23 @@ const MatchesPage: React.FC = () => {
         setSelectedMatchForMenu(null);
     };
 
-    const handleStartConversation = (matchId: string) => {
-        // Navigate to live matching theater
-        navigate(`/theater/${matchId}`);
+    const handleStartConversation = async (matchId: string) => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            // Create a new conversation session
+            const response = await api.post('/api/v1/sessions/create', {
+                match_id: matchId,
+                session_type: 'conversation'
+            });
+
+            // Navigate to theater with the session ID
+            navigate(`/theater/${response.session_id}`);
+        } catch (err: any) {
+            setError(err.message || 'Failed to start conversation');
+            setLoading(false);
+        }
     };
 
     const handleViewCompatibility = (matchId: string) => {

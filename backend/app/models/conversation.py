@@ -214,59 +214,6 @@ class ConversationCompatibilityReport(Base):
     session = relationship("ConversationSession", back_populates="compatibility_reports")
 
 
-class ScenarioTemplate(Base):
-    """Template for relationship scenarios used in simulations."""
-    
-    __tablename__ = "scenario_templates"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    
-    # Scenario identification
-    name = Column(String(100), nullable=False)
-    category = Column(String(50), nullable=False)  # "financial", "family", "lifestyle", etc.
-    difficulty_level = Column(Integer, default=1)  # 1-5 difficulty scale
-    
-    # Scenario content
-    title = Column(String(200), nullable=False)
-    description = Column(Text, nullable=False)
-    context = Column(Text)  # Background context
-    
-    # Scenario configuration
-    estimated_duration_minutes = Column(Integer, default=15)
-    participant_roles = Column(JSON, default=list)  # Roles for participants
-    success_criteria = Column(JSON, default=list)  # What indicates success
-    
-    # Scenario prompts
-    initial_prompt = Column(Text)  # How to start the scenario
-    guiding_questions = Column(JSON, default=list)  # Questions to guide discussion
-    escalation_prompts = Column(JSON, default=list)  # How to escalate if needed
-    
-    # Compatibility focus
-    personality_dimensions = Column(JSON, default=list)  # Which traits this tests
-    value_dimensions = Column(JSON, default=list)  # Which values this explores
-    skill_dimensions = Column(JSON, default=list)  # Which skills this assesses
-    
-    # Cultural and demographic considerations
-    cultural_adaptations = Column(JSON, default=dict)  # Cultural variations
-    age_appropriateness = Column(String(50), default="all")  # Age range
-    relationship_stage = Column(String(50), default="early")  # Relationship stage
-    
-    # Usage and performance
-    usage_count = Column(Integer, default=0)
-    success_rate = Column(Float, default=0.0)  # How often it leads to good insights
-    user_rating = Column(Float, default=0.0)  # User satisfaction rating
-    
-    # Status
-    is_active = Column(Boolean, default=True)
-    is_approved = Column(Boolean, default=True)
-    requires_moderation = Column(Boolean, default=False)
-    
-    # Timestamps
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    created_by = Column(String(100))  # Who created this scenario
-
-
 class ConversationAnalytics(Base):
     """Analytics and metrics for conversation sessions."""
     

@@ -67,6 +67,7 @@ class Match(Base):
     user2 = relationship("User", foreign_keys=[user2_id], back_populates="matches_as_user2")
     compatibility_reports = relationship("CompatibilityReport", back_populates="match", cascade="all, delete-orphan")
     sessions = relationship("MatchSession", back_populates="match", cascade="all, delete-orphan")
+    simulation_sessions = relationship("SimulationSession", back_populates="match", cascade="all, delete-orphan")
 
 
 class MatchSession(Base):

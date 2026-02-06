@@ -103,7 +103,8 @@ const LiveMatchingTheater: React.FC<LiveMatchingTheaterProps> = ({
         userReactions: [],
         isLoading: true,
         showCompatibilityPanel: false,
-        showViewersPanel: false
+        showViewersPanel: false,
+        showCompletionDialog: false
     });
 
     // UI state
@@ -220,14 +221,20 @@ const LiveMatchingTheater: React.FC<LiveMatchingTheaterProps> = ({
         }));
 
         if (data.status === 'completed') {
-            // Session ended, show completion message
+            // Session ended, show completion message and give user more time
+            setState(prev => ({
+                ...prev,
+                showCompletionDialog: true
+            }));
+
+            // Auto-redirect after longer delay (10 seconds instead of 3)
             setTimeout(() => {
                 if (onSessionEnd) {
                     onSessionEnd();
                 } else {
                     navigate('/matches');
                 }
-            }, 3000);
+            }, 10000);
         }
     }, [navigate, onSessionEnd]);
 

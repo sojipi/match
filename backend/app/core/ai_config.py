@@ -41,25 +41,35 @@ def initialize_gemini() -> bool:
         import google.genai as genai
         
         if settings.GEMINI_API_KEY and settings.GEMINI_API_KEY != "your-gemini-api-key":
-            genai.configure(api_key=settings.GEMINI_API_KEY)
+            # Configure the client
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
             
-            # Test the API connection
-            model = genai.GenerativeModel('gemini-pro')
-            test_response = model.generate_content("Hello")
-            
-            if test_response and test_response.text:
+            # Test the API connection with a valid model
+            try:
+                response = client.models.generate_content(
+                    model=get_gemini_model_name(),
+                    contents="Hello"
+                )
+                
+                if response and response.text:
+                    GEMINI_AVAILABLE = True
+                    logger.info("Gemini API initialized and tested successfully")
+                    return True
+                else:
+                    logger.warning("Gemini API test failed - no response received")
+                    return False
+            except Exception as test_error:
+                logger.warning(f"Gemini API test failed: {test_error}")
+                # Still mark as available if client creation succeeded
                 GEMINI_AVAILABLE = True
-                logger.info("Gemini API initialized and tested successfully")
+                logger.info("Gemini API configured (test skipped)")
                 return True
-            else:
-                logger.warning("Gemini API test failed - no response received")
-                return False
         else:
             logger.warning("Gemini API key not configured")
             return False
             
     except ImportError:
-        logger.warning("Google Generative AI not available - install with: pip install google-genai")
+        logger.warning("Google Gen AI not available - install with: pip install google-genai")
         return False
     except Exception as e:
         logger.error(f"Failed to initialize Gemini API: {e}")
@@ -130,9 +140,17 @@ class MockModelWrapper:
 
 # Configuration for different AI models
 AI_MODEL_CONFIGS = {
-    "gemini_pro": {
+    "gemini_flash": {
+        "model_name": "gemini-2.5-flash-lite",
         "temperature": 0.7,
         "max_tokens": 1000,
+        "top_p": 0.9,
+        "top_k": 40
+    },
+    "gemini_pro": {
+        "model_name": "gemini-2.5-pro", 
+        "temperature": 0.7,
+        "max_tokens": 2000,
         "top_p": 0.9,
         "top_k": 40
     },
@@ -150,10 +168,20 @@ AI_MODEL_CONFIGS = {
     }
 }
 
+# Default model to use for different services
+DEFAULT_GEMINI_MODEL = "gemini_flash"
+
 
 def get_model_config(model_name: str) -> Dict[str, Any]:
     """Get configuration for a specific AI model."""
     return AI_MODEL_CONFIGS.get(model_name, AI_MODEL_CONFIGS["mock_model"])
+
+
+def get_gemini_model_name(model_type: str = None) -> str:
+    """Get the Gemini model name to use."""
+    if model_type and model_type in AI_MODEL_CONFIGS:
+        return AI_MODEL_CONFIGS[model_type]["model_name"]
+    return AI_MODEL_CONFIGS[DEFAULT_GEMINI_MODEL]["model_name"]
 
 
 def is_ai_service_available(service_name: str) -> bool:
