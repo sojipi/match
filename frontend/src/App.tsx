@@ -8,6 +8,7 @@ import PersonalityAssessmentPage from './pages/PersonalityAssessmentPage';
 import AvatarPage from './pages/AvatarPage';
 import MatchDiscoveryPage from './pages/MatchDiscoveryPage';
 import MatchesPage from './pages/MatchesPage';
+import MessagesPage from './pages/MessagesPage';
 import NotificationsPage from './pages/NotificationsPage';
 import LiveMatchingTheaterPage from './pages/LiveMatchingTheaterPage';
 import WebSocketTestPage from './pages/WebSocketTestPage';
@@ -86,6 +87,26 @@ const App: React.FC = () => {
                     <ProtectedRoute>
                         <AppLayout>
                             <MatchesPage />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/messages"
+                element={
+                    <ProtectedRoute>
+                        <AppLayout>
+                            <MessagesPage />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/messages/:matchId"
+                element={
+                    <ProtectedRoute>
+                        <AppLayout>
+                            <MessagesPage />
                         </AppLayout>
                     </ProtectedRoute>
                 }

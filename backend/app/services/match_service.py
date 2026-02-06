@@ -445,3 +445,58 @@ class MatchService:
 
         time_diff = now - last_active
         return time_diff.total_seconds() < 900  # 15 minutes
+    
+    async def get_match_by_id(self, match_id: str, user_id: str) -> dict:
+        """
+        Get match details by ID.
+        
+        Args:
+            match_id: ID of the match
+            user_id: ID of the requesting user (for verification)
+            
+        Returns:
+            Dictionary with match details including both users' information
+        """
+        # Get the match with user details
+        query = select(Match).options(
+            selectinload(Match.user1).selectinload(User.photos),
+            selectinload(Match.user2).selectinload(User.photos)
+        ).where(Match.id == match_id)
+        
+        result = await self.db.execute(query)
+        match = result.scalar_one_or_none()
+        
+        if not match:
+            return None
+        
+        # Verify the requesting user is part of this match
+        if str(match.user1_id) != user_id and str(match.user2_id) != user_id:
+            return None
+        
+        # Get primary photos for both users
+        user1_photo = None
+        if match.user1.photos:
+            user1_photo = next(
+                (photo.file_url for photo in match.user1.photos if photo.is_primary),
+                match.user1.photos[0].file_url if match.user1.photos else None
+            )
+        
+        user2_photo = None
+        if match.user2.photos:
+            user2_photo = next(
+                (photo.file_url for photo in match.user2.photos if photo.is_primary),
+                match.user2.photos[0].file_url if match.user2.photos else None
+            )
+        
+        return {
+            "id": str(match.id),
+            "user1_id": str(match.user1_id),
+            "user2_id": str(match.user2_id),
+            "user1_name": f"{match.user1.first_name} {match.user1.last_name[0]}.",
+            "user2_name": f"{match.user2.first_name} {match.user2.last_name[0]}.",
+            "user1_photo": user1_photo,
+            "user2_photo": user2_photo,
+            "status": match.status.value,
+            "compatibility_score": match.compatibility_score,
+            "created_at": match.created_at.isoformat()
+        }

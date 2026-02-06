@@ -10,7 +10,7 @@ from app.core.database import get_db
 from app.core.security import get_current_user
 from app.services.notification_service import NotificationService
 from app.models.user import User
-from app.models.notification import NotificationType
+from app.models.notification import NotificationType, NotificationPreference, PushSubscription
 
 router = APIRouter()
 
@@ -55,6 +55,46 @@ class BlockedUser(BaseModel):
     name: str
     reason: Optional[str] = None
     blocked_at: str
+
+
+class NotificationPreferencesRequest(BaseModel):
+    """Notification preferences update request."""
+    in_app_enabled: Optional[bool] = None
+    email_enabled: Optional[bool] = None
+    push_enabled: Optional[bool] = None
+    match_notifications: Optional[bool] = None
+    message_notifications: Optional[bool] = None
+    like_notifications: Optional[bool] = None
+    profile_view_notifications: Optional[bool] = None
+    system_notifications: Optional[bool] = None
+    quiet_hours_start: Optional[str] = None
+    quiet_hours_end: Optional[str] = None
+    timezone: Optional[str] = None
+    email_digest_frequency: Optional[str] = None
+
+
+class NotificationPreferencesResponse(BaseModel):
+    """Notification preferences response."""
+    in_app_enabled: bool
+    email_enabled: bool
+    push_enabled: bool
+    match_notifications: bool
+    message_notifications: bool
+    like_notifications: bool
+    profile_view_notifications: bool
+    system_notifications: bool
+    quiet_hours_start: Optional[str] = None
+    quiet_hours_end: Optional[str] = None
+    timezone: str
+    email_digest_frequency: str
+
+
+class PushSubscriptionRequest(BaseModel):
+    """Push subscription request."""
+    endpoint: str
+    keys: Dict[str, str]  # Contains p256dh and auth keys
+    user_agent: Optional[str] = None
+    device_name: Optional[str] = None
 
 
 @router.get("/", response_model=NotificationListResponse)
@@ -301,4 +341,213 @@ async def report_user(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to report user: {str(e)}"
+        )
+
+
+
+@router.get("/preferences", response_model=NotificationPreferencesResponse)
+async def get_notification_preferences(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get user's notification preferences."""
+    try:
+        from sqlalchemy import select
+        
+        # Get or create preferences
+        query = select(NotificationPreference).where(
+            NotificationPreference.user_id == current_user.id
+        )
+        result = await db.execute(query)
+        preferences = result.scalar_one_or_none()
+        
+        if not preferences:
+            # Create default preferences
+            preferences = NotificationPreference(user_id=current_user.id)
+            db.add(preferences)
+            await db.commit()
+            await db.refresh(preferences)
+        
+        return NotificationPreferencesResponse(
+            in_app_enabled=preferences.in_app_enabled,
+            email_enabled=preferences.email_enabled,
+            push_enabled=preferences.push_enabled,
+            match_notifications=preferences.match_notifications,
+            message_notifications=preferences.message_notifications,
+            like_notifications=preferences.like_notifications,
+            profile_view_notifications=preferences.profile_view_notifications,
+            system_notifications=preferences.system_notifications,
+            quiet_hours_start=preferences.quiet_hours_start,
+            quiet_hours_end=preferences.quiet_hours_end,
+            timezone=preferences.timezone,
+            email_digest_frequency=preferences.email_digest_frequency
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get notification preferences: {str(e)}"
+        )
+
+
+@router.put("/preferences", response_model=NotificationPreferencesResponse)
+async def update_notification_preferences(
+    request: NotificationPreferencesRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Update user's notification preferences."""
+    try:
+        from sqlalchemy import select
+        
+        # Get or create preferences
+        query = select(NotificationPreference).where(
+            NotificationPreference.user_id == current_user.id
+        )
+        result = await db.execute(query)
+        preferences = result.scalar_one_or_none()
+        
+        if not preferences:
+            preferences = NotificationPreference(user_id=current_user.id)
+            db.add(preferences)
+        
+        # Update preferences
+        if request.in_app_enabled is not None:
+            preferences.in_app_enabled = request.in_app_enabled
+        if request.email_enabled is not None:
+            preferences.email_enabled = request.email_enabled
+        if request.push_enabled is not None:
+            preferences.push_enabled = request.push_enabled
+        if request.match_notifications is not None:
+            preferences.match_notifications = request.match_notifications
+        if request.message_notifications is not None:
+            preferences.message_notifications = request.message_notifications
+        if request.like_notifications is not None:
+            preferences.like_notifications = request.like_notifications
+        if request.profile_view_notifications is not None:
+            preferences.profile_view_notifications = request.profile_view_notifications
+        if request.system_notifications is not None:
+            preferences.system_notifications = request.system_notifications
+        if request.quiet_hours_start is not None:
+            preferences.quiet_hours_start = request.quiet_hours_start
+        if request.quiet_hours_end is not None:
+            preferences.quiet_hours_end = request.quiet_hours_end
+        if request.timezone is not None:
+            preferences.timezone = request.timezone
+        if request.email_digest_frequency is not None:
+            preferences.email_digest_frequency = request.email_digest_frequency
+        
+        await db.commit()
+        await db.refresh(preferences)
+        
+        return NotificationPreferencesResponse(
+            in_app_enabled=preferences.in_app_enabled,
+            email_enabled=preferences.email_enabled,
+            push_enabled=preferences.push_enabled,
+            match_notifications=preferences.match_notifications,
+            message_notifications=preferences.message_notifications,
+            like_notifications=preferences.like_notifications,
+            profile_view_notifications=preferences.profile_view_notifications,
+            system_notifications=preferences.system_notifications,
+            quiet_hours_start=preferences.quiet_hours_start,
+            quiet_hours_end=preferences.quiet_hours_end,
+            timezone=preferences.timezone,
+            email_digest_frequency=preferences.email_digest_frequency
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update notification preferences: {str(e)}"
+        )
+
+
+@router.post("/push/subscribe")
+async def subscribe_to_push_notifications(
+    request: PushSubscriptionRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Subscribe to push notifications."""
+    try:
+        from sqlalchemy import select
+        from datetime import datetime
+        
+        # Check if subscription already exists
+        query = select(PushSubscription).where(
+            PushSubscription.endpoint == request.endpoint
+        )
+        result = await db.execute(query)
+        subscription = result.scalar_one_or_none()
+        
+        if subscription:
+            # Update existing subscription
+            subscription.user_id = current_user.id
+            subscription.p256dh_key = request.keys.get('p256dh', '')
+            subscription.auth_key = request.keys.get('auth', '')
+            subscription.user_agent = request.user_agent
+            subscription.device_name = request.device_name
+            subscription.is_active = True
+            subscription.last_used = datetime.utcnow()
+        else:
+            # Create new subscription
+            subscription = PushSubscription(
+                user_id=current_user.id,
+                endpoint=request.endpoint,
+                p256dh_key=request.keys.get('p256dh', ''),
+                auth_key=request.keys.get('auth', ''),
+                user_agent=request.user_agent,
+                device_name=request.device_name,
+                is_active=True,
+                last_used=datetime.utcnow()
+            )
+            db.add(subscription)
+        
+        await db.commit()
+        
+        return {"message": "Successfully subscribed to push notifications"}
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to subscribe to push notifications: {str(e)}"
+        )
+
+
+@router.post("/push/unsubscribe")
+async def unsubscribe_from_push_notifications(
+    endpoint: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Unsubscribe from push notifications."""
+    try:
+        from sqlalchemy import select, and_
+        
+        # Find and deactivate subscription
+        query = select(PushSubscription).where(
+            and_(
+                PushSubscription.user_id == current_user.id,
+                PushSubscription.endpoint == endpoint
+            )
+        )
+        result = await db.execute(query)
+        subscription = result.scalar_one_or_none()
+        
+        if subscription:
+            subscription.is_active = False
+            await db.commit()
+            return {"message": "Successfully unsubscribed from push notifications"}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Subscription not found"
+            )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to unsubscribe from push notifications: {str(e)}"
         )

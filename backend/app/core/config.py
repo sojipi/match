@@ -65,10 +65,19 @@ class Settings(BaseSettings):
     S3_BUCKET_NAME: Optional[str] = None
     
     # Email
+    EMAIL_ENABLED: bool = False
     SMTP_HOST: Optional[str] = None
     SMTP_PORT: int = 587
-    SMTP_USERNAME: Optional[str] = None
+    SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
+    FROM_EMAIL: str = "noreply@aimatchmaker.com"
+    FROM_NAME: str = "AI Matchmaker"
+    FRONTEND_URL: str = "http://localhost:3000"
+    
+    # Push Notifications (PWA)
+    PUSH_NOTIFICATIONS_ENABLED: bool = False
+    VAPID_PUBLIC_KEY: Optional[str] = None
+    VAPID_PRIVATE_KEY: Optional[str] = None
     
     # Social Authentication
     GOOGLE_CLIENT_ID: Optional[str] = None

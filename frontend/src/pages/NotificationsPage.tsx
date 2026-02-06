@@ -301,24 +301,26 @@ const NotificationsPage: React.FC = () => {
                                         </Box>
                                     }
                                     secondary={
-                                        <Box>
+                                        <React.Fragment>
                                             <Typography
+                                                component="span"
                                                 variant="body1"
                                                 color="text.secondary"
                                                 sx={{
                                                     fontWeight: notification.is_read ? 'normal' : 'medium',
+                                                    display: 'block',
                                                     mb: 0.5
                                                 }}
                                             >
                                                 {notification.message}
                                             </Typography>
-                                            <Typography variant="caption" color="text.secondary">
+                                            <Typography component="span" variant="caption" color="text.secondary">
                                                 {formatDate(notification.created_at)}
                                                 {notification.read_at && (
                                                     <> • Read {formatDate(notification.read_at)}</>
                                                 )}
                                             </Typography>
-                                        </Box>
+                                        </React.Fragment>
                                     }
                                 />
 

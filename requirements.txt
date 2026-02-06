@@ -48,6 +48,13 @@ colorama>=0.4.6
 babel>=2.12.0
 googletrans>=4.0.0
 
+# Push Notifications
+pywebpush>=1.14.0
+py-vapid>=1.9.0
+
+# Email Templates
+jinja2>=3.1.0
+
 # Vector Database (for Mem0)
 chromadb>=0.4.0
 

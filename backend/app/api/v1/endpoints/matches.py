@@ -185,3 +185,29 @@ async def get_match_history(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get match history: {str(e)}"
         )
+
+
+@router.get("/{match_id}")
+async def get_match(
+    match_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Get match details by ID."""
+    match_service = MatchService(db)
+    
+    try:
+        match = await match_service.get_match_by_id(match_id, str(current_user.id))
+        if not match:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Match not found"
+            )
+        return match
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get match: {str(e)}"
+        )

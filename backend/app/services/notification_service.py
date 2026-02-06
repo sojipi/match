@@ -7,6 +7,7 @@ from sqlalchemy import select, and_, or_, func, desc
 from sqlalchemy.orm import selectinload
 from datetime import datetime, timedelta
 import asyncio
+import logging
 
 from app.models.notification import (
     Notification, NotificationPreference, NotificationType, 
@@ -14,6 +15,9 @@ from app.models.notification import (
 )
 from app.models.user import User
 from app.models.match import Match
+from app.services.email_service import email_service
+
+logger = logging.getLogger(__name__)
 
 
 class NotificationService:
@@ -407,13 +411,82 @@ class NotificationService:
         if not preferences or preferences.in_app_enabled:
             channels.append(NotificationChannel.IN_APP.value)
         
-        # TODO: Implement email, push, and SMS delivery
-        # For now, just mark as delivered
+        # Deliver email notifications if enabled
+        if preferences and preferences.email_enabled:
+            await self._send_email_notification(notification)
+            channels.append(NotificationChannel.EMAIL.value)
+        
+        # TODO: Implement push notification delivery
+        # if preferences and preferences.push_enabled:
+        #     await self._send_push_notification(notification)
+        #     channels.append(NotificationChannel.PUSH.value)
+        
+        # Mark as delivered
         notification.is_delivered = True
         notification.delivered_at = datetime.utcnow()
         notification.delivery_channels = channels
         
         await self.db.commit()
+    
+    async def _send_email_notification(self, notification: Notification):
+        """Send email notification based on notification type."""
+        try:
+            # Get user email
+            user_query = select(User).where(User.id == notification.user_id)
+            result = await self.db.execute(user_query)
+            user = result.scalar_one_or_none()
+            
+            if not user or not user.email:
+                return
+            
+            # Get related user info if applicable
+            match_user = None
+            if notification.related_user_id:
+                match_user_query = select(User).where(User.id == notification.related_user_id)
+                result = await self.db.execute(match_user_query)
+                match_user = result.scalar_one_or_none()
+            
+            # Send appropriate email based on notification type
+            if notification.type == NotificationType.MATCH and match_user:
+                await email_service.send_match_notification(
+                    to_email=user.email,
+                    user_name=user.first_name,
+                    match_name=match_user.first_name,
+                    match_photo_url=None,  # TODO: Get primary photo
+                    action_url=notification.action_url
+                )
+            
+            elif notification.type == NotificationType.MUTUAL_MATCH and match_user:
+                await email_service.send_mutual_match_notification(
+                    to_email=user.email,
+                    user_name=user.first_name,
+                    match_name=match_user.first_name,
+                    match_photo_url=None,  # TODO: Get primary photo
+                    action_url=notification.action_url
+                )
+            
+            elif notification.type == NotificationType.MESSAGE and match_user:
+                message_preview = notification.data.get('message_preview', notification.message)
+                await email_service.send_message_notification(
+                    to_email=user.email,
+                    user_name=user.first_name,
+                    sender_name=match_user.first_name,
+                    message_preview=message_preview,
+                    action_url=notification.action_url
+                )
+            
+            elif notification.type == NotificationType.COMPATIBILITY_REPORT and match_user:
+                compatibility_score = notification.data.get('compatibility_score', 0.0)
+                await email_service.send_compatibility_report_notification(
+                    to_email=user.email,
+                    user_name=user.first_name,
+                    match_name=match_user.first_name,
+                    compatibility_score=compatibility_score,
+                    action_url=notification.action_url
+                )
+        
+        except Exception as e:
+            logger.error(f"Failed to send email notification: {str(e)}")
     
     # Convenience methods for common notifications
     async def notify_new_match(self, user_id: str, match_user_id: str, match_id: str):

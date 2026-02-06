@@ -107,6 +107,35 @@ class NotificationPreference(Base):
     user = relationship("User")
 
 
+class PushSubscription(Base):
+    """Push notification subscription model for PWA."""
+    
+    __tablename__ = "push_subscriptions"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    # Subscription data
+    endpoint = Column(String(500), nullable=False, unique=True)
+    p256dh_key = Column(String(200), nullable=False)
+    auth_key = Column(String(200), nullable=False)
+    
+    # Device information
+    user_agent = Column(String(500))
+    device_name = Column(String(100))
+    
+    # Status
+    is_active = Column(Boolean, default=True)
+    last_used = Column(DateTime(timezone=True))
+    
+    # Timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Relationships
+    user = relationship("User")
+
+
 class UserBlock(Base):
     """User blocking model."""
     

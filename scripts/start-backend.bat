@@ -6,6 +6,13 @@ if exist "..\venv\" (
     cd ..
 )
 
+REM Kill any process using port 8000
+echo Checking for processes on port 8000...
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :8000 ^| findstr LISTENING') do (
+    echo Killing process %%a on port 8000...
+    taskkill /F /PID %%a >nul 2>&1
+)
+
 REM Check if virtual environment exists
 if not exist "venv\" (
     echo Creating virtual environment...

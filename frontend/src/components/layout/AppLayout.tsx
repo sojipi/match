@@ -32,6 +32,7 @@ import {
     LightMode,
     DarkMode,
     Notifications as NotificationsIcon,
+    Message as MessageIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
@@ -51,6 +52,7 @@ const navigationItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Discover', icon: <SearchIcon />, path: '/discover' },
     { text: 'Matches', icon: <FavoriteIcon />, path: '/matches' },
+    { text: 'Messages', icon: <MessageIcon />, path: '/messages' },
     { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
     { text: 'AI Avatar', icon: <PsychologyIcon />, path: '/avatar' },
     { text: 'Profile', icon: <PersonIcon />, path: '/profile' },

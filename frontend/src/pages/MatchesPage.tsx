@@ -397,10 +397,21 @@ const MatchesPage: React.FC = () => {
                                             startIcon={<Message />}
                                             onClick={(e) => {
                                                 e.stopPropagation();
+                                                navigate(`/messages/${match.id}`);
+                                            }}
+                                        >
+                                            Message
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            size="small"
+                                            startIcon={<Message />}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 handleStartConversation(match.id);
                                             }}
                                         >
-                                            Chat
+                                            AI Chat
                                         </Button>
                                         <Button
                                             variant="outlined"
@@ -411,7 +422,7 @@ const MatchesPage: React.FC = () => {
                                                 handleViewCompatibility(match);
                                             }}
                                         >
-                                            View Report
+                                            Report
                                         </Button>
                                         <IconButton
                                             onClick={(e) => handleMenuClick(e, match)}
@@ -507,6 +518,16 @@ const MatchesPage: React.FC = () => {
                                 View Report
                             </Button>
                             <Button
+                                variant="outlined"
+                                startIcon={<Message />}
+                                onClick={() => {
+                                    setShowMatchDetails(false);
+                                    navigate(`/messages/${selectedMatch.id}`);
+                                }}
+                            >
+                                Direct Message
+                            </Button>
+                            <Button
                                 variant="contained"
                                 startIcon={<Message />}
                                 onClick={() => {
@@ -514,7 +535,7 @@ const MatchesPage: React.FC = () => {
                                     handleStartConversation(selectedMatch.id);
                                 }}
                             >
-                                Start Conversation
+                                AI Conversation
                             </Button>
                         </DialogActions>
                     </>
@@ -527,6 +548,24 @@ const MatchesPage: React.FC = () => {
                 open={Boolean(menuAnchor)}
                 onClose={handleMenuClose}
             >
+                <MenuItem onClick={() => {
+                    if (selectedMatchForMenu) {
+                        navigate(`/messages/${selectedMatchForMenu.id}`);
+                    }
+                    handleMenuClose();
+                }}>
+                    <Message sx={{ mr: 1 }} />
+                    Direct Message
+                </MenuItem>
+                <MenuItem onClick={() => {
+                    if (selectedMatchForMenu) {
+                        handleStartConversation(selectedMatchForMenu.id);
+                    }
+                    handleMenuClose();
+                }}>
+                    <Message sx={{ mr: 1 }} />
+                    AI Conversation
+                </MenuItem>
                 <MenuItem onClick={() => {
                     if (selectedMatchForMenu) {
                         handleViewCompatibility(selectedMatchForMenu);
@@ -544,15 +583,6 @@ const MatchesPage: React.FC = () => {
                 }}>
                     <History sx={{ mr: 1 }} />
                     View Conversation History
-                </MenuItem>
-                <MenuItem onClick={() => {
-                    if (selectedMatchForMenu) {
-                        handleStartConversation(selectedMatchForMenu.id);
-                    }
-                    handleMenuClose();
-                }}>
-                    <Message sx={{ mr: 1 }} />
-                    Start Conversation
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={() => {
