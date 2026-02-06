@@ -149,7 +149,9 @@ const CompatibilityReport: React.FC<CompatibilityReportProps> = ({
             });
 
             if (!response.ok) {
-                throw new Error('Failed to load compatibility report');
+                const errorData = await response.json().catch(() => ({}));
+                const errorMessage = errorData.detail || 'Failed to load compatibility report';
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -207,9 +209,41 @@ const CompatibilityReport: React.FC<CompatibilityReportProps> = ({
 
     if (error) {
         return (
-            <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-            </Alert>
+            <Box sx={{ maxWidth: '800px', mx: 'auto', p: 3 }}>
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                        Unable to Generate Report
+                    </Typography>
+                    <Typography variant="body2" paragraph>
+                        {error}
+                    </Typography>
+                    {error.includes('not found') && (
+                        <Typography variant="body2" color="text.secondary">
+                            This user may no longer be available or the link may be invalid.
+                        </Typography>
+                    )}
+                    {error.includes('personality profile') && (
+                        <Typography variant="body2" color="text.secondary">
+                            Complete your personality assessment to unlock compatibility reports.
+                        </Typography>
+                    )}
+                </Alert>
+                <Box display="flex" gap={2}>
+                    {onClose && (
+                        <Button variant="outlined" onClick={onClose}>
+                            Back to Matches
+                        </Button>
+                    )}
+                    {error.includes('Your personality profile') && (
+                        <Button
+                            variant="contained"
+                            onClick={() => window.location.href = '/personality-assessment'}
+                        >
+                            Complete Assessment
+                        </Button>
+                    )}
+                </Box>
+            </Box>
         );
     }
 

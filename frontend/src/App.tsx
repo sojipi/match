@@ -12,6 +12,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import LiveMatchingTheaterPage from './pages/LiveMatchingTheaterPage';
 import WebSocketTestPage from './pages/WebSocketTestPage';
 import SettingsPage from './pages/SettingsPage';
+import CompatibilityReportPage from './pages/CompatibilityReportPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -128,6 +129,16 @@ const App: React.FC = () => {
                     <ProtectedRoute>
                         <AppLayout>
                             <SettingsPage />
+                        </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/compatibility/:reportId"
+                element={
+                    <ProtectedRoute>
+                        <AppLayout>
+                            <CompatibilityReportPage />
                         </AppLayout>
                     </ProtectedRoute>
                 }

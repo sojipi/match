@@ -69,6 +69,32 @@ async def get_compatibility_report(
     compatibility_service = CompatibilityService(db)
     
     try:
+        # Check if both users have personality profiles
+        users = await compatibility_service._get_user_profiles(
+            str(current_user.id), user2_id
+        )
+        
+        if not users:
+            raise HTTPException(
+                status_code=404, 
+                detail="One or both users not found"
+            )
+        
+        user1, user2 = users
+        
+        # Check if personality profiles exist
+        if not user1.personality_profile:
+            raise HTTPException(
+                status_code=400,
+                detail="Your personality profile is incomplete. Please complete the personality assessment first."
+            )
+        
+        if not user2.personality_profile:
+            raise HTTPException(
+                status_code=400,
+                detail="The other user's personality profile is incomplete. A compatibility report cannot be generated yet."
+            )
+        
         report = await compatibility_service.generate_compatibility_report(
             user1_id=str(current_user.id),
             user2_id=user2_id,
@@ -78,6 +104,8 @@ async def get_compatibility_report(
         
         return CompatibilityReportResponse(**report)
         
+    except HTTPException:
+        raise
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

@@ -131,9 +131,9 @@ const MatchesPage: React.FC = () => {
         }
     };
 
-    const handleViewCompatibility = (matchId: string) => {
-        // Navigate to compatibility report
-        navigate(`/compatibility/${matchId}`);
+    const handleViewCompatibility = (match: MatchHistoryItem) => {
+        // Navigate to compatibility report using the matched user's ID
+        navigate(`/compatibility/${match.user.id}`);
     };
 
     const handleBlockUser = async (matchId: string) => {
@@ -402,7 +402,7 @@ const MatchesPage: React.FC = () => {
                                             startIcon={<Visibility />}
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleViewCompatibility(match.id);
+                                                handleViewCompatibility(match);
                                             }}
                                         >
                                             View Report
@@ -495,7 +495,7 @@ const MatchesPage: React.FC = () => {
                                 startIcon={<Visibility />}
                                 onClick={() => {
                                     setShowMatchDetails(false);
-                                    handleViewCompatibility(selectedMatch.id);
+                                    handleViewCompatibility(selectedMatch);
                                 }}
                             >
                                 View Report
@@ -523,7 +523,7 @@ const MatchesPage: React.FC = () => {
             >
                 <MenuItem onClick={() => {
                     if (selectedMatchForMenu) {
-                        handleViewCompatibility(selectedMatchForMenu.id);
+                        handleViewCompatibility(selectedMatchForMenu);
                     }
                     handleMenuClose();
                 }}>
