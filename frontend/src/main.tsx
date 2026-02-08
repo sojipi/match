@@ -7,9 +7,12 @@ import { store } from './store/store';
 import { createAppTheme } from './theme/theme';
 import { useAppSelector } from './hooks/redux';
 import { updateToken } from './store/slices/authSlice';
+import { AccessibilityProvider } from './contexts/AccessibilityContext';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import './index.css';
+import './styles/accessibility.css';
+import './i18n/config';
 
 // Setup global token update handler for API client
 window.dispatchTokenUpdate = (token: string) => {
@@ -34,7 +37,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <ErrorBoundary>
             <Provider store={store}>
                 <BrowserRouter>
-                    <ThemedApp />
+                    <AccessibilityProvider>
+                        <ThemedApp />
+                    </AccessibilityProvider>
                 </BrowserRouter>
             </Provider>
         </ErrorBoundary>

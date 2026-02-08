@@ -14,7 +14,15 @@
       "Bash(alembic current:*)",
       "Bash(..venvScriptspython.exe fix_notifications_schema.py)",
       "Bash(../venv/Scripts/python.exe:*)",
-      "Bash(alembic revision:*)"
+      "Bash(alembic revision:*)",
+      "Bash(grep:*)",
+      "Bash(npm run dev:*)",
+      "Bash(ls:*)",
+      "Bash(npm run build:*)",
+      "Bash(node -e:*)",
+      "Bash(psql:*)",
+      "Bash(alembic upgrade:*)",
+      "Bash(tee:*)"
     ]
   }
 }

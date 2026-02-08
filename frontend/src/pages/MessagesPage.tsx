@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Container,
     Box,
@@ -44,6 +45,7 @@ interface MatchUser {
 
 const MessagesPage: React.FC = () => {
     const theme = useTheme();
+    const { t } = useTranslation();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const { matchId } = useParams<{ matchId: string }>();
     const navigate = useNavigate();
@@ -125,7 +127,7 @@ const MessagesPage: React.FC = () => {
             return (
                 <Container maxWidth="lg" sx={{ py: 2 }}>
                     <Typography variant="h5" gutterBottom>
-                        Messages
+                        {t('messages.title')}
                     </Typography>
                     <Paper>
                         <ConversationsList onSelectConversation={handleSelectConversation} />
@@ -139,7 +141,7 @@ const MessagesPage: React.FC = () => {
     return (
         <Container maxWidth="lg" sx={{ py: 2, height: 'calc(100vh - 100px)' }}>
             <Typography variant="h5" gutterBottom>
-                Messages
+                {t('messages.title')}
             </Typography>
             <Grid container spacing={2} sx={{ height: 'calc(100% - 50px)' }}>
                 <Grid item xs={12} md={4}>
@@ -163,7 +165,7 @@ const MessagesPage: React.FC = () => {
                                 height="100%"
                             >
                                 <Typography variant="body1" color="text.secondary">
-                                    Select a conversation to start messaging
+                                    {t('messages.selectConversation')}
                                 </Typography>
                             </Box>
                         )}

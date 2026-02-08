@@ -4,6 +4,7 @@
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Box, Container, Typography, Alert, Button } from '@mui/material';
 import { useAppSelector } from '../hooks/redux';
 import PersonalityAssessment from '../components/personality/PersonalityAssessment';
@@ -12,6 +13,7 @@ import { PersonalityProfile, AssessmentProgress } from '../types/personality';
 
 const PersonalityAssessmentPage: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { user } = useAppSelector(state => state.auth);
     const [isCompleted, setIsCompleted] = useState(false);
     const [completedProfile, setCompletedProfile] = useState<PersonalityProfile | null>(null);
@@ -39,9 +41,9 @@ const PersonalityAssessmentPage: React.FC = () => {
         return (
             <Container maxWidth="md" sx={{ py: 4 }}>
                 <Alert severity="error">
-                    You must be logged in to take the personality assessment.
+                    {t('personality.page.loginRequired')}
                     <Button onClick={() => navigate('/auth')} sx={{ ml: 2 }}>
-                        Login
+                        {t('personality.page.login')}
                     </Button>
                 </Alert>
             </Container>
@@ -53,12 +55,12 @@ const PersonalityAssessmentPage: React.FC = () => {
             {/* Header */}
             <Box textAlign="center" mb={4}>
                 <Typography variant="h3" component="h1" gutterBottom>
-                    Personality Assessment
+                    {t('personality.page.title')}
                 </Typography>
                 <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
                     {isCompleted
-                        ? "Your personality profile is complete! Review your results below."
-                        : "Help us understand your unique personality to find your perfect matches. This assessment takes about 10-15 minutes."
+                        ? t('personality.page.subtitleComplete')
+                        : t('personality.page.subtitle')
                     }
                 </Typography>
             </Box>
@@ -67,8 +69,7 @@ const PersonalityAssessmentPage: React.FC = () => {
                 /* Assessment Complete - Show Results */
                 <Box>
                     <Alert severity="success" sx={{ mb: 3 }}>
-                        🎉 Congratulations! Your personality assessment is complete.
-                        Your AI avatar is now ready to represent you in matchmaking sessions.
+                        {t('personality.page.congratulations')}
                     </Alert>
 
                     <PersonalityVisualization
@@ -82,44 +83,44 @@ const PersonalityAssessmentPage: React.FC = () => {
                             size="large"
                             onClick={handleContinueToDashboard}
                         >
-                            Continue to Dashboard
+                            {t('personality.page.continueToDashboard')}
                         </Button>
                         <Button
                             variant="outlined"
                             size="large"
                             onClick={handleRetakeAssessment}
                         >
-                            Retake Assessment
+                            {t('personality.retakeAssessment')}
                         </Button>
                     </Box>
 
                     {/* Next Steps */}
                     <Box sx={{ mt: 4, p: 3, bgcolor: 'primary.50', borderRadius: 2 }}>
                         <Typography variant="h6" gutterBottom>
-                            What's Next?
+                            {t('personality.page.whatsNext.title')}
                         </Typography>
                         <Typography variant="body1" paragraph>
-                            Now that your personality profile is complete, you can:
+                            {t('personality.page.whatsNext.intro')}
                         </Typography>
                         <ul>
                             <li>
                                 <Typography variant="body2">
-                                    <strong>Discover Matches:</strong> Browse potential partners based on personality compatibility
+                                    {t('personality.page.whatsNext.discoverMatches')}
                                 </Typography>
                             </li>
                             <li>
                                 <Typography variant="body2">
-                                    <strong>Watch AI Conversations:</strong> See your AI avatar interact with potential matches
+                                    {t('personality.page.whatsNext.watchConversations')}
                                 </Typography>
                             </li>
                             <li>
                                 <Typography variant="body2">
-                                    <strong>Get Compatibility Reports:</strong> Receive detailed analysis of your relationship potential
+                                    {t('personality.page.whatsNext.getReports')}
                                 </Typography>
                             </li>
                             <li>
                                 <Typography variant="body2">
-                                    <strong>Refine Your Profile:</strong> Update your assessment anytime to improve matches
+                                    {t('personality.page.whatsNext.refineProfile')}
                                 </Typography>
                             </li>
                         </ul>
@@ -130,9 +131,9 @@ const PersonalityAssessmentPage: React.FC = () => {
                 <Box>
                     {currentProgress && currentProgress.completion_percentage > 0 && (
                         <Alert severity="info" sx={{ mb: 3 }}>
-                            You're {Math.round(currentProgress.completion_percentage)}% complete!
+                            {t('personality.page.progressMessage', { percent: Math.round(currentProgress.completion_percentage) })}
                             {currentProgress.insights.length > 0 &&
-                                ` We've already discovered ${currentProgress.insights.length} personality insights about you.`
+                                ` ${t('personality.page.insightsDiscovered', { count: currentProgress.insights.length })}`
                             }
                         </Alert>
                     )}
@@ -146,27 +147,27 @@ const PersonalityAssessmentPage: React.FC = () => {
                     {/* Help Section */}
                     <Box sx={{ mt: 4, p: 3, bgcolor: 'grey.50', borderRadius: 2 }}>
                         <Typography variant="h6" gutterBottom>
-                            Assessment Tips
+                            {t('personality.page.tips.title')}
                         </Typography>
                         <ul>
                             <li>
                                 <Typography variant="body2">
-                                    Answer honestly - there are no right or wrong answers
+                                    {t('personality.page.tips.honest')}
                                 </Typography>
                             </li>
                             <li>
                                 <Typography variant="body2">
-                                    Take your time - you can pause and resume anytime
+                                    {t('personality.page.tips.takeTime')}
                                 </Typography>
                             </li>
                             <li>
                                 <Typography variant="body2">
-                                    Use the confidence slider to indicate how sure you are
+                                    {t('personality.page.tips.confidence')}
                                 </Typography>
                             </li>
                             <li>
                                 <Typography variant="body2">
-                                    Watch for real-time insights as you progress
+                                    {t('personality.page.tips.insights')}
                                 </Typography>
                             </li>
                         </ul>

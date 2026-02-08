@@ -2,6 +2,7 @@
  * Avatar Management Page
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Container,
     Box,
@@ -22,6 +23,7 @@ import { AIAvatar } from '../types/avatar';
 
 const AvatarPage: React.FC = () => {
     const user = useSelector((state: RootState) => state.auth.user);
+    const { t } = useTranslation();
     const [currentAvatar, setCurrentAvatar] = useState<AIAvatar | null>(null);
 
     const handleAvatarUpdate = (avatar: AIAvatar) => {

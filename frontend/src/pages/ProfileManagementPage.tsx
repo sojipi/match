@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
     Container,
     Paper,
@@ -112,6 +113,7 @@ interface NotificationPreferences {
 
 const ProfileManagementPage: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { user } = useAppSelector(state => state.auth);
     const [tabValue, setTabValue] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -338,7 +340,7 @@ const ProfileManagementPage: React.FC = () => {
                     <ArrowBack />
                 </IconButton>
                 <Typography variant="h4" component="h1">
-                    Profile Management
+                    {t('profile.title')}
                 </Typography>
             </Box>
 
@@ -346,7 +348,7 @@ const ProfileManagementPage: React.FC = () => {
             <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
                     <Typography variant="subtitle1">
-                        Profile Completeness
+                        {t('profile.completeness')}
                     </Typography>
                     <Typography variant="h6" color="primary">
                         {Math.round(profile.profile_completeness * 100)}%
@@ -358,7 +360,7 @@ const ProfileManagementPage: React.FC = () => {
                     sx={{ height: 8, borderRadius: 4 }}
                 />
                 <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                    Complete your profile to improve match quality and visibility
+                    {t('profile.completeProfile')}
                 </Typography>
             </Paper>
 
@@ -377,18 +379,18 @@ const ProfileManagementPage: React.FC = () => {
             <Paper elevation={3}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs value={tabValue} onChange={handleTabChange}>
-                        <Tab label="Basic Info" />
-                        <Tab label="Photos" />
-                        <Tab label="Privacy" />
-                        <Tab label="Notifications" />
-                        <Tab label="Verification" />
+                        <Tab label={t('profile.tabs.basicInfo')} />
+                        <Tab label={t('profile.tabs.photos')} />
+                        <Tab label={t('profile.tabs.privacy')} />
+                        <Tab label={t('profile.tabs.notifications')} />
+                        <Tab label={t('profile.tabs.verification')} />
                     </Tabs>
                 </Box>
 
                 {/* Basic Info Tab */}
                 <TabPanel value={tabValue} index={0}>
                     <Typography variant="h5" gutterBottom>
-                        Basic Information
+                        {t('profile.basicInfo')}
                     </Typography>
                     <Divider sx={{ my: 2 }} />
 
@@ -396,7 +398,7 @@ const ProfileManagementPage: React.FC = () => {
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 fullWidth
-                                label="First Name"
+                                label={t('profile.firstName')}
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
                                 required
@@ -405,7 +407,7 @@ const ProfileManagementPage: React.FC = () => {
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 fullWidth
-                                label="Last Name"
+                                label={t('profile.lastName')}
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
                                 required
@@ -414,37 +416,37 @@ const ProfileManagementPage: React.FC = () => {
                         <Grid item xs={12}>
                             <TextField
                                 fullWidth
-                                label="Bio"
+                                label={t('profile.bio')}
                                 value={bio}
                                 onChange={(e) => setBio(e.target.value)}
                                 multiline
                                 rows={4}
-                                helperText={`${bio.length}/500 characters`}
+                                helperText={t('profile.characterCount', { count: bio.length })}
                                 inputProps={{ maxLength: 500 }}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 fullWidth
-                                label="Location"
+                                label={t('profile.location')}
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
-                                placeholder="City, State"
+                                placeholder={t('profile.locationPlaceholder')}
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <FormControl fullWidth>
-                                <InputLabel>Gender</InputLabel>
+                                <InputLabel>{t('profile.gender')}</InputLabel>
                                 <Select
                                     value={gender}
                                     onChange={(e) => setGender(e.target.value)}
-                                    label="Gender"
+                                    label={t('profile.gender')}
                                 >
-                                    <MenuItem value="">Prefer not to say</MenuItem>
-                                    <MenuItem value="male">Male</MenuItem>
-                                    <MenuItem value="female">Female</MenuItem>
-                                    <MenuItem value="non-binary">Non-binary</MenuItem>
-                                    <MenuItem value="other">Other</MenuItem>
+                                    <MenuItem value="">{t('profile.genderOptions.preferNotToSay')}</MenuItem>
+                                    <MenuItem value="male">{t('profile.genderOptions.male')}</MenuItem>
+                                    <MenuItem value="female">{t('profile.genderOptions.female')}</MenuItem>
+                                    <MenuItem value="non-binary">{t('profile.genderOptions.nonBinary')}</MenuItem>
+                                    <MenuItem value="other">{t('profile.genderOptions.other')}</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
@@ -457,7 +459,7 @@ const ProfileManagementPage: React.FC = () => {
                             onClick={handleSaveProfile}
                             disabled={loading}
                         >
-                            {loading ? 'Saving...' : 'Save Changes'}
+                            {loading ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
                         </Button>
                     </Box>
                 </TabPanel>
@@ -481,7 +483,7 @@ const ProfileManagementPage: React.FC = () => {
                                         component="img"
                                         height="200"
                                         image={photo.file_url}
-                                        alt="Profile photo"
+                                        alt={t('profile.photoAlt')}
                                     />
                                     <CardContent>
                                         <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -492,7 +494,7 @@ const ProfileManagementPage: React.FC = () => {
                                                 {photo.is_primary ? <Star /> : <StarBorder />}
                                             </IconButton>
                                             {photo.is_primary && (
-                                                <Chip label="Primary" size="small" color="primary" />
+                                                <Chip label={t('profile.primaryPhoto')} size="small" color="primary" />
                                             )}
                                             <IconButton
                                                 onClick={() => handleDeletePhoto(photo.id)}
@@ -531,7 +533,7 @@ const ProfileManagementPage: React.FC = () => {
                                     <Box textAlign="center">
                                         <PhotoCamera sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
                                         <Typography variant="body2" color="text.secondary">
-                                            {uploadingPhoto ? 'Uploading...' : 'Add Photo'}
+                                            {uploadingPhoto ? t('profile.uploading') : t('profile.addPhoto')}
                                         </Typography>
                                     </Box>
                                 </Card>
@@ -543,25 +545,25 @@ const ProfileManagementPage: React.FC = () => {
                 {/* Privacy Tab */}
                 <TabPanel value={tabValue} index={2}>
                     <Typography variant="h5" gutterBottom>
-                        Privacy Settings
+                        {t('profile.privacy.title')}
                     </Typography>
                     <Divider sx={{ my: 2 }} />
 
                     <FormGroup>
                         <Box mb={3}>
                             <FormControl fullWidth sx={{ mb: 2 }}>
-                                <InputLabel>Profile Visibility</InputLabel>
+                                <InputLabel>{t('profile.privacy.visibility')}</InputLabel>
                                 <Select
                                     value={privacySettings.profile_visibility}
                                     onChange={(e) => setPrivacySettings({
                                         ...privacySettings,
                                         profile_visibility: e.target.value
                                     })}
-                                    label="Profile Visibility"
+                                    label={t('profile.privacy.visibility')}
                                 >
-                                    <MenuItem value="public">Public - Visible to everyone</MenuItem>
-                                    <MenuItem value="friends">Friends - Visible to matches only</MenuItem>
-                                    <MenuItem value="private">Private - Hidden from discovery</MenuItem>
+                                    <MenuItem value="public">{t('profile.privacy.public')}</MenuItem>
+                                    <MenuItem value="friends">{t('profile.privacy.friends')}</MenuItem>
+                                    <MenuItem value="private">{t('profile.privacy.private')}</MenuItem>
                                 </Select>
                             </FormControl>
 
@@ -575,7 +577,7 @@ const ProfileManagementPage: React.FC = () => {
                                         })}
                                     />
                                 }
-                                label="Show my age on profile"
+                                label={t('profile.privacy.showAge')}
                             />
 
                             <FormControlLabel
@@ -588,7 +590,7 @@ const ProfileManagementPage: React.FC = () => {
                                         })}
                                     />
                                 }
-                                label="Show my location"
+                                label={t('profile.privacy.showLocation')}
                             />
 
                             <FormControlLabel
@@ -601,7 +603,7 @@ const ProfileManagementPage: React.FC = () => {
                                         })}
                                     />
                                 }
-                                label="Show when I was last active"
+                                label={t('profile.privacy.showLastActive')}
                             />
 
                             <FormControlLabel
@@ -614,22 +616,22 @@ const ProfileManagementPage: React.FC = () => {
                                         })}
                                     />
                                 }
-                                label="Show my profile in match discovery"
+                                label={t('profile.privacy.showInDiscovery')}
                             />
 
                             <FormControl fullWidth sx={{ mt: 2 }}>
-                                <InputLabel>Allow Messages From</InputLabel>
+                                <InputLabel>{t('profile.privacy.allowMessagesFrom')}</InputLabel>
                                 <Select
                                     value={privacySettings.allow_messages_from}
                                     onChange={(e) => setPrivacySettings({
                                         ...privacySettings,
                                         allow_messages_from: e.target.value
                                     })}
-                                    label="Allow Messages From"
+                                    label={t('profile.privacy.allowMessagesFrom')}
                                 >
-                                    <MenuItem value="everyone">Everyone</MenuItem>
-                                    <MenuItem value="matches">Matches only</MenuItem>
-                                    <MenuItem value="none">No one</MenuItem>
+                                    <MenuItem value="everyone">{t('profile.privacy.everyone')}</MenuItem>
+                                    <MenuItem value="matches">{t('profile.privacy.matchesOnly')}</MenuItem>
+                                    <MenuItem value="none">{t('profile.privacy.noOne')}</MenuItem>
                                 </Select>
                             </FormControl>
                         </Box>
@@ -641,20 +643,20 @@ const ProfileManagementPage: React.FC = () => {
                         onClick={handleSavePrivacySettings}
                         disabled={loading}
                     >
-                        {loading ? 'Saving...' : 'Save Privacy Settings'}
+                        {loading ? t('common.loading') : t('profile.privacy.save')}
                     </Button>
                 </TabPanel>
 
                 {/* Notifications Tab */}
                 <TabPanel value={tabValue} index={3}>
                     <Typography variant="h5" gutterBottom>
-                        Notification Preferences
+                        {t('profile.notifications.title')}
                     </Typography>
                     <Divider sx={{ my: 2 }} />
 
                     <FormGroup>
                         <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                            Email Notifications
+                            {t('profile.notifications.email')}
                         </Typography>
                         <FormControlLabel
                             control={
@@ -666,7 +668,7 @@ const ProfileManagementPage: React.FC = () => {
                                     })}
                                 />
                             }
-                            label="New matches"
+                            label={t('profile.notifications.newMatches')}
                         />
                         <FormControlLabel
                             control={
@@ -678,7 +680,7 @@ const ProfileManagementPage: React.FC = () => {
                                     })}
                                 />
                             }
-                            label="New messages"
+                            label={t('profile.notifications.newMessages')}
                         />
                         <FormControlLabel
                             control={
@@ -690,11 +692,11 @@ const ProfileManagementPage: React.FC = () => {
                                     })}
                                 />
                             }
-                            label="Compatibility reports"
+                            label={t('profile.notifications.reports')}
                         />
 
                         <Typography variant="subtitle1" gutterBottom sx={{ mt: 3 }}>
-                            Push Notifications
+                            {t('profile.notifications.push')}
                         </Typography>
                         <FormControlLabel
                             control={
@@ -706,7 +708,7 @@ const ProfileManagementPage: React.FC = () => {
                                     })}
                                 />
                             }
-                            label="New matches"
+                            label={t('profile.notifications.newMatches')}
                         />
                         <FormControlLabel
                             control={
@@ -718,7 +720,7 @@ const ProfileManagementPage: React.FC = () => {
                                     })}
                                 />
                             }
-                            label="New messages"
+                            label={t('profile.notifications.newMessages')}
                         />
                         <FormControlLabel
                             control={
@@ -730,7 +732,7 @@ const ProfileManagementPage: React.FC = () => {
                                     })}
                                 />
                             }
-                            label="AI session updates"
+                            label={t('profile.notifications.sessions')}
                         />
                     </FormGroup>
 
@@ -741,38 +743,38 @@ const ProfileManagementPage: React.FC = () => {
                         disabled={loading}
                         sx={{ mt: 3 }}
                     >
-                        {loading ? 'Saving...' : 'Save Notification Preferences'}
+                        {loading ? t('common.loading') : t('profile.notifications.save')}
                     </Button>
                 </TabPanel>
 
                 {/* Verification Tab */}
                 <TabPanel value={tabValue} index={4}>
                     <Typography variant="h5" gutterBottom>
-                        Profile Verification
+                        {t('profile.verification.title')}
                     </Typography>
                     <Divider sx={{ my: 2 }} />
 
                     {profile.is_verified ? (
                         <Alert severity="success" icon={<Verified />}>
                             <Typography variant="subtitle1" gutterBottom>
-                                Your profile is verified!
+                                {t('profile.verification.verified')}
                             </Typography>
                             <Typography variant="body2">
-                                Verified profiles get more visibility and trust from other users.
+                                {t('profile.verification.verifiedDesc')}
                             </Typography>
                         </Alert>
                     ) : (
                         <Box>
                             <Alert severity="info" sx={{ mb: 3 }}>
                                 <Typography variant="subtitle1" gutterBottom>
-                                    Why verify your profile?
+                                    {t('profile.verification.why')}
                                 </Typography>
                                 <Typography variant="body2" component="div">
                                     <ul>
-                                        <li>Increase trust with potential matches</li>
-                                        <li>Get priority in match discovery</li>
-                                        <li>Stand out with a verified badge</li>
-                                        <li>Access to premium features</li>
+                                        <li>{t('profile.verification.benefit1')}</li>
+                                        <li>{t('profile.verification.benefit2')}</li>
+                                        <li>{t('profile.verification.benefit3')}</li>
+                                        <li>{t('profile.verification.benefit4')}</li>
                                     </ul>
                                 </Typography>
                             </Alert>

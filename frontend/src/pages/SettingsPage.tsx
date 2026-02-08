@@ -29,10 +29,15 @@ import {
     Person,
     Lock,
     Notifications,
-    ArrowForward
+    ArrowForward,
+    Language
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import LanguageSwitcher from '../components/LanguageSwitcher';
+import AccessibilitySettings from '../components/AccessibilitySettings';
+import LanguageTest from '../components/LanguageTest';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -58,6 +63,7 @@ function TabPanel(props: TabPanelProps) {
 
 const SettingsPage: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [tabValue, setTabValue] = useState(0);
     const [geminiApiKey, setGeminiApiKey] = useState('');
     const [showApiKey, setShowApiKey] = useState(false);
@@ -105,35 +111,37 @@ const SettingsPage: React.FC = () => {
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom>
-                Settings
+                {t('settings.title')}
             </Typography>
 
             <Paper elevation={3} sx={{ mb: 3 }}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs value={tabValue} onChange={handleTabChange}>
-                        <Tab label="API Configuration" />
-                        <Tab label="Quick Links" />
+                        <Tab label={t('settings.tabs.apiConfig')} />
+                        <Tab label={t('settings.language') + ' & ' + t('settings.culturalPreferences')} />
+                        <Tab label={t('settings.accessibility')} />
+                        <Tab label={t('settings.tabs.quickLinks')} />
                     </Tabs>
                 </Box>
 
                 <TabPanel value={tabValue} index={0}>
                     <Typography variant="h5" gutterBottom>
-                        Gemini API Configuration
+                        {t('settings.api.title')}
                     </Typography>
                     <Divider sx={{ my: 2 }} />
 
                     <Alert severity="info" sx={{ mb: 3 }}>
                         <Typography variant="body2">
-                            Configure your own Gemini API Key to avoid system quota limits and enjoy uninterrupted AI conversation services.
+                            {t('settings.api.description')}
                         </Typography>
                     </Alert>
 
                     <Box sx={{ mb: 3 }}>
                         <Typography variant="subtitle2" gutterBottom>
-                            How to get a Gemini API Key?
+                            {t('settings.api.howToGet')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" paragraph>
-                            1. Visit{' '}
+                            1. {t('settings.api.step1')}{' '}
                             <Link
                                 href="https://ai.google.dev/"
                                 target="_blank"
@@ -143,24 +151,24 @@ const SettingsPage: React.FC = () => {
                             </Link>
                         </Typography>
                         <Typography variant="body2" color="text.secondary" paragraph>
-                            2. Sign in with your Google account
+                            2. {t('settings.api.step2')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" paragraph>
-                            3. Click "Get API Key" to create a new API Key
+                            3. {t('settings.api.step3')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                            4. Copy the API Key and paste it in the field below
+                            4. {t('settings.api.step4')}
                         </Typography>
                     </Box>
 
                     <TextField
                         fullWidth
-                        label="Gemini API Key"
+                        label={t('settings.api.label')}
                         value={geminiApiKey}
                         onChange={(e) => setGeminiApiKey(e.target.value)}
                         type={showApiKey ? 'text' : 'password'}
                         placeholder="AIza..."
-                        helperText="Your API Key will be securely encrypted and stored"
+                        helperText={t('settings.api.helperText')}
                         InputProps={{
                             endAdornment: (
                                 <InputAdornment position="end">
@@ -178,7 +186,7 @@ const SettingsPage: React.FC = () => {
 
                     {success && (
                         <Alert severity="success" sx={{ mb: 2 }}>
-                            API Key saved successfully!
+                            {t('settings.api.success')}
                         </Alert>
                     )}
 
@@ -195,27 +203,91 @@ const SettingsPage: React.FC = () => {
                             onClick={handleSaveApiKey}
                             disabled={loading || !geminiApiKey}
                         >
-                            {loading ? 'Saving...' : 'Save Settings'}
+                            {loading ? t('common.loading') : t('settings.api.save')}
                         </Button>
                         <Button
                             variant="outlined"
                             onClick={() => navigate(-1)}
                         >
-                            Back
+                            {t('common.back')}
                         </Button>
                     </Box>
 
                     <Alert severity="warning" icon={<Info />} sx={{ mt: 3 }}>
                         <Typography variant="body2">
-                            <strong>Important:</strong> Keep your API Key secure and do not share it with others.
-                            If you suspect your API Key has been compromised, revoke it immediately in Google AI Studio and generate a new one.
+                            <strong>{t('settings.api.important')}:</strong> {t('settings.api.securityNote')}
                         </Typography>
                     </Alert>
                 </TabPanel>
 
                 <TabPanel value={tabValue} index={1}>
                     <Typography variant="h5" gutterBottom>
-                        Quick Links
+                        {t('settings.language')} & {t('settings.culturalPreferences')}
+                    </Typography>
+                    <Divider sx={{ my: 2 }} />
+
+                    {/* Language Test Component */}
+                    <LanguageTest />
+
+                    <Alert severity="info" sx={{ mb: 3 }}>
+                        <Typography variant="body2">
+                            {t('settings.cultural.description')}
+                        </Typography>
+                    </Alert>
+
+                    <Box sx={{ mb: 4 }}>
+                        <Typography variant="subtitle1" gutterBottom>
+                            {t('settings.language')}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            {t('settings.cultural.languageDesc')}
+                        </Typography>
+                        <LanguageSwitcher />
+                    </Box>
+
+                    <Box sx={{ mb: 4 }}>
+                        <Typography variant="subtitle1" gutterBottom>
+                            {t('settings.cultural.title')}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            {t('settings.cultural.adaptationDesc')}
+                        </Typography>
+                        <List dense>
+                            <ListItem>
+                                <ListItemText
+                                    primary={t('settings.cultural.features.assessment')}
+                                    secondary={t('settings.cultural.features.assessmentDesc')}
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemText
+                                    primary={t('settings.cultural.features.scenarios')}
+                                    secondary={t('settings.cultural.features.scenariosDesc')}
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemText
+                                    primary={t('settings.cultural.features.aiStyle')}
+                                    secondary={t('settings.cultural.features.aiStyleDesc')}
+                                />
+                            </ListItem>
+                        </List>
+                    </Box>
+
+                    <Alert severity="success" icon={<Language />}>
+                        <Typography variant="body2">
+                            <strong>{t('settings.cultural.multilingualTitle')}:</strong> {t('settings.cultural.multilingualDesc')}
+                        </Typography>
+                    </Alert>
+                </TabPanel>
+
+                <TabPanel value={tabValue} index={2}>
+                    <AccessibilitySettings />
+                </TabPanel>
+
+                <TabPanel value={tabValue} index={3}>
+                    <Typography variant="h5" gutterBottom>
+                        {t('settings.tabs.quickLinks')}
                     </Typography>
                     <Divider sx={{ my: 2 }} />
 
@@ -225,8 +297,8 @@ const SettingsPage: React.FC = () => {
                                 <Person color="primary" />
                             </ListItemIcon>
                             <ListItemText
-                                primary="Profile Management"
-                                secondary="Edit your profile, photos, and basic information"
+                                primary={t('settings.quickLinks.profile')}
+                                secondary={t('settings.quickLinks.profileDesc')}
                             />
                             <ArrowForward />
                         </ListItem>
@@ -236,8 +308,8 @@ const SettingsPage: React.FC = () => {
                                 <Lock color="primary" />
                             </ListItemIcon>
                             <ListItemText
-                                primary="Privacy Settings"
-                                secondary="Control who can see your profile and information"
+                                primary={t('settings.quickLinks.privacy')}
+                                secondary={t('settings.quickLinks.privacyDesc')}
                             />
                             <ArrowForward />
                         </ListItem>
@@ -247,8 +319,8 @@ const SettingsPage: React.FC = () => {
                                 <Notifications color="primary" />
                             </ListItemIcon>
                             <ListItemText
-                                primary="Notification Preferences"
-                                secondary="Manage email and push notification settings"
+                                primary={t('settings.quickLinks.notifications')}
+                                secondary={t('settings.quickLinks.notificationsDesc')}
                             />
                             <ArrowForward />
                         </ListItem>
@@ -256,7 +328,7 @@ const SettingsPage: React.FC = () => {
 
                     <Alert severity="info" sx={{ mt: 3 }}>
                         <Typography variant="body2">
-                            For detailed profile, privacy, and notification settings, visit the Profile Management page.
+                            {t('settings.quickLinks.detailsNote')}
                         </Typography>
                     </Alert>
                 </TabPanel>

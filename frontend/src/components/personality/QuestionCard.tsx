@@ -3,6 +3,7 @@
  * Displays different types of personality assessment questions with engaging UI
  */
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Card,
     CardContent,
@@ -40,6 +41,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     answer,
     onAnswer
 }) => {
+    const { t } = useTranslation();
     const [confidence, setConfidence] = useState<number>(4);
     const [draggedItems, setDraggedItems] = useState<string[]>(
         question.question_type === 'ranking' && question.options
@@ -134,7 +136,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     >
                         <Box textAlign="center" mt={2}>
                             <Chip
-                                label={`Your answer: ${answer}`}
+                                label={t('personality.questionCard.yourAnswer', { answer })}
                                 color="primary"
                                 variant="outlined"
                             />
@@ -143,6 +145,40 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                 )}
             </Box>
         );
+    };
+
+    const getTranslatedOption = (option: string): string => {
+        // Map options to translation keys
+        const optionKeyMap: Record<string, string> = {
+            'Art galleries and museums': 'personality.options.artGalleries',
+            'Outdoor adventures': 'personality.options.outdoorAdventures',
+            'Reading and learning': 'personality.options.readingLearning',
+            'Social gatherings': 'personality.options.socialGatherings',
+            'Creative projects': 'personality.options.creativeProjects',
+            'Family': 'personality.options.family',
+            'Career Success': 'personality.options.careerSuccess',
+            'Personal Growth': 'personality.options.personalGrowth',
+            'Adventure': 'personality.options.adventure',
+            'Security': 'personality.options.security',
+            'Creativity': 'personality.options.creativity',
+            'Trust and honesty': 'personality.options.trustHonesty',
+            'Shared interests': 'personality.options.sharedInterests',
+            'Physical attraction': 'personality.options.physicalAttraction',
+            'Emotional support': 'personality.options.emotionalSupport',
+            'Intellectual connection': 'personality.options.intellectualConnection',
+            'Direct discussion': 'personality.options.directDiscussion',
+            'Give it time to cool down': 'personality.options.giveTime',
+            'Seek compromise': 'personality.options.seekCompromise',
+            'Avoid confrontation': 'personality.options.avoidConfrontation',
+            'Get help from others': 'personality.options.getHelp',
+            'Direct and straightforward': 'personality.options.directStraightforward',
+            'Diplomatic and tactful': 'personality.options.diplomaticTactful',
+            'Emotional and expressive': 'personality.options.emotionalExpressive',
+            'Logical and analytical': 'personality.options.logicalAnalytical'
+        };
+
+        const key = optionKeyMap[option];
+        return key ? t(key) : option;
     };
 
     const renderMultipleChoiceQuestion = () => {
@@ -176,7 +212,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                                     <FormControlLabel
                                         value={option}
                                         control={<Radio />}
-                                        label={option}
+                                        label={getTranslatedOption(option)}
                                         sx={{ width: '100%', m: 0 }}
                                     />
                                 </Paper>
@@ -213,7 +249,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         return (
             <Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Drag and drop to rank these items in order of importance to you:
+                    {t('personality.questionCard.rankingInstructions')}
                 </Typography>
                 <Stack spacing={1}>
                     {draggedItems.map((item, index) => (
@@ -244,7 +280,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                             >
                                 <Box display="flex" alignItems="center">
                                     <DragIndicator sx={{ mr: 1, color: 'text.secondary' }} />
-                                    <Typography variant="body1">{item}</Typography>
+                                    <Typography variant="body1">{getTranslatedOption(item)}</Typography>
                                     <Box flexGrow={1} />
                                     <Chip
                                         label={`#${index + 1}`}
@@ -272,7 +308,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             >
                 <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                        How confident are you in this answer?
+                        {t('personality.questionCard.confidence')}
                     </Typography>
                     <Box sx={{ px: 1 }}>
                         <Slider
@@ -281,9 +317,9 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                             max={5}
                             step={1}
                             marks={[
-                                { value: 1, label: 'Not sure' },
-                                { value: 3, label: 'Somewhat' },
-                                { value: 5, label: 'Very sure' }
+                                { value: 1, label: t('personality.questionCard.notSure') },
+                                { value: 3, label: t('personality.questionCard.somewhat') },
+                                { value: 5, label: t('personality.questionCard.verySure') }
                             ]}
                             onChange={(_, value) => handleConfidenceChange(value as number)}
                             sx={{ mt: 1 }}
@@ -304,10 +340,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     </Box>
                     <Box flexGrow={1}>
                         <Typography variant="overline" color="text.secondary">
-                            {question.category.toUpperCase()}
+                            {t(`personality.categories.${question.category.toLowerCase()}`)}
                         </Typography>
                         <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
-                            {question.question}
+                            {t(`personality.questions.${question.id}`)}
                         </Typography>
                     </Box>
                 </Box>

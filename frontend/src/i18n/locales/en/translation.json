@@ -1,0 +1,565 @@
+{
+    "common": {
+        "welcome": "Welcome",
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success",
+        "cancel": "Cancel",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit",
+        "back": "Back",
+        "next": "Next",
+        "previous": "Previous",
+        "submit": "Submit",
+        "close": "Close",
+        "confirm": "Confirm",
+        "search": "Search",
+        "filter": "Filter",
+        "sort": "Sort",
+        "viewMore": "View More",
+        "viewLess": "View Less"
+    },
+    "auth": {
+        "login": "Log In",
+        "logout": "Log Out",
+        "register": "Sign Up",
+        "email": "Email",
+        "password": "Password",
+        "confirmPassword": "Confirm Password",
+        "forgotPassword": "Forgot Password?",
+        "resetPassword": "Reset Password",
+        "emailVerification": "Email Verification",
+        "verifyEmail": "Verify Email",
+        "resendVerification": "Resend Verification",
+        "loginWithGoogle": "Continue with Google",
+        "loginWithFacebook": "Continue with Facebook",
+        "alreadyHaveAccount": "Already have an account?",
+        "dontHaveAccount": "Don't have an account?",
+        "createAccount": "Create Account",
+        "welcomeBack": "Welcome Back",
+        "getStarted": "Get Started"
+    },
+    "navigation": {
+        "home": "Home",
+        "dashboard": "Dashboard",
+        "discover": "Discover",
+        "matches": "Matches",
+        "messages": "Messages",
+        "notifications": "Notifications",
+        "profile": "Profile",
+        "settings": "Settings",
+        "avatar": "My Avatar",
+        "compatibility": "Compatibility",
+        "theater": "Live Theater"
+    },
+    "personality": {
+        "assessment": "Personality Assessment",
+        "startAssessment": "Start Assessment",
+        "continueAssessment": "Continue Assessment",
+        "completeAssessment": "Complete Assessment",
+        "retakeAssessment": "Retake Assessment",
+        "progress": "Progress",
+        "question": "Question",
+        "of": "of",
+        "stronglyDisagree": "Strongly Disagree",
+        "disagree": "Disagree",
+        "neutral": "Neutral",
+        "agree": "Agree",
+        "stronglyAgree": "Strongly Agree",
+        "traits": {
+            "openness": "Openness",
+            "conscientiousness": "Conscientiousness",
+            "extraversion": "Extraversion",
+            "agreeableness": "Agreeableness",
+            "neuroticism": "Emotional Stability"
+        },
+        "insights": "Personality Insights",
+        "yourProfile": "Your Personality Profile",
+        "completeness": "Profile Completeness",
+        "component": {
+            "title": "Personality Assessment",
+            "questionCount": "{{current}} of {{total}}",
+            "percentComplete": "{{percent}}% complete",
+            "showInsights": "Show",
+            "hideInsights": "Hide",
+            "insightsCount": "Insights ({{count}})",
+            "loading": "Loading your personality assessment...",
+            "error": "Failed to load assessment. Please try again.",
+            "retry": "Retry",
+            "previous": "Previous",
+            "nextQuestion": "Next Question",
+            "completeAssessment": "Complete Assessment",
+            "completing": "Completing Assessment...",
+            "estimatedTime": "Estimated time remaining: {{minutes}} minutes"
+        },
+        "questionCard": {
+            "confidence": "How confident are you in this answer?",
+            "notSure": "Not sure",
+            "somewhat": "Somewhat",
+            "verySure": "Very sure",
+            "yourAnswer": "Your answer: {{answer}}",
+            "rankingInstructions": "Drag and drop to rank these items in order of importance to you:"
+        },
+        "questions": {
+            "open_1": "I enjoy exploring new ideas and concepts",
+            "open_2": "I prefer routine and familiar experiences",
+            "open_3": "Which activities appeal to you most?",
+            "cons_1": "I am always prepared and organized",
+            "cons_2": "I often leave tasks until the last minute",
+            "extra_1": "I feel energized by social interactions",
+            "extra_2": "I prefer quiet, intimate gatherings over large parties",
+            "agree_1": "I try to be cooperative and avoid conflicts",
+            "agree_2": "I tend to be skeptical of others' motives",
+            "neuro_1": "I often feel anxious or worried",
+            "neuro_2": "I remain calm under pressure",
+            "values_1": "Rank these values by importance to you",
+            "values_2": "What matters most in a relationship?",
+            "comm_1": "How do you prefer to resolve disagreements?",
+            "comm_2": "Your communication style is more:"
+        },
+        "options": {
+            "artGalleries": "Art galleries and museums",
+            "outdoorAdventures": "Outdoor adventures",
+            "readingLearning": "Reading and learning",
+            "socialGatherings": "Social gatherings",
+            "creativeProjects": "Creative projects",
+            "family": "Family",
+            "careerSuccess": "Career Success",
+            "personalGrowth": "Personal Growth",
+            "adventure": "Adventure",
+            "security": "Security",
+            "creativity": "Creativity",
+            "trustHonesty": "Trust and honesty",
+            "sharedInterests": "Shared interests",
+            "physicalAttraction": "Physical attraction",
+            "emotionalSupport": "Emotional support",
+            "intellectualConnection": "Intellectual connection",
+            "directDiscussion": "Direct discussion",
+            "giveTime": "Give it time to cool down",
+            "seekCompromise": "Seek compromise",
+            "avoidConfrontation": "Avoid confrontation",
+            "getHelp": "Get help from others",
+            "directStraightforward": "Direct and straightforward",
+            "diplomaticTactful": "Diplomatic and tactful",
+            "emotionalExpressive": "Emotional and expressive",
+            "logicalAnalytical": "Logical and analytical"
+        },
+        "categories": {
+            "openness": "OPENNESS",
+            "conscientiousness": "CONSCIENTIOUSNESS",
+            "extraversion": "EXTRAVERSION",
+            "agreeableness": "AGREEABLENESS",
+            "neuroticism": "NEUROTICISM",
+            "values": "VALUES",
+            "communication": "COMMUNICATION"
+        },
+        "page": {
+            "title": "Personality Assessment",
+            "subtitle": "Help us understand your unique personality to find your perfect matches. This assessment takes about 10-15 minutes.",
+            "subtitleComplete": "Your personality profile is complete! Review your results below.",
+            "loginRequired": "You must be logged in to take the personality assessment.",
+            "login": "Login",
+            "continueToDashboard": "Continue to Dashboard",
+            "congratulations": "🎉 Congratulations! Your personality assessment is complete. Your AI avatar is now ready to represent you in matchmaking sessions.",
+            "progressMessage": "You're {{percent}}% complete!",
+            "insightsDiscovered": "We've already discovered {{count}} personality insights about you.",
+            "whatsNext": {
+                "title": "What's Next?",
+                "intro": "Now that your personality profile is complete, you can:",
+                "discoverMatches": "Discover Matches: Browse potential partners based on personality compatibility",
+                "watchConversations": "Watch AI Conversations: See your AI avatar interact with potential matches",
+                "getReports": "Get Compatibility Reports: Receive detailed analysis of your relationship potential",
+                "refineProfile": "Refine Your Profile: Update your assessment anytime to improve matches"
+            },
+            "tips": {
+                "title": "Assessment Tips",
+                "honest": "Answer honestly - there are no right or wrong answers",
+                "takeTime": "Take your time - you can pause and resume anytime",
+                "confidence": "Use the confidence slider to indicate how sure you are",
+                "insights": "Watch for real-time insights as you progress"
+            }
+        }
+    },
+    "avatar": {
+        "title": "AI Avatar",
+        "create": "Create Avatar",
+        "customize": "Customize Avatar",
+        "retrain": "Retrain Avatar",
+        "preview": "Preview Avatar",
+        "completeness": "Avatar Completeness",
+        "suggestions": "Improvement Suggestions",
+        "personality": "Personality Traits",
+        "communicationStyle": "Communication Style",
+        "values": "Core Values",
+        "status": {
+            "ready": "Ready",
+            "training": "Training",
+            "incomplete": "Incomplete"
+        }
+    },
+    "matching": {
+        "discover": "Discover Matches",
+        "potentialMatches": "Potential Matches",
+        "compatibility": "Compatibility",
+        "compatibilityScore": "Compatibility Score",
+        "like": "Like",
+        "pass": "Pass",
+        "superLike": "Super Like",
+        "mutualMatch": "It's a Match!",
+        "startConversation": "Start Conversation",
+        "viewProfile": "View Profile",
+        "filters": "Filters",
+        "ageRange": "Age Range",
+        "distance": "Distance",
+        "interests": "Interests",
+        "relationshipGoals": "Relationship Goals"
+    },
+    "matches": {
+        "title": "Your Matches",
+        "discoverMore": "Discover More",
+        "message": "Message",
+        "aiChat": "AI Chat",
+        "report": "Report",
+        "directMessage": "Direct Message",
+        "aiConversation": "AI Conversation",
+        "viewReport": "View Report",
+        "viewCompatibilityReport": "View Compatibility Report",
+        "viewConversationHistory": "View Conversation History",
+        "blockUser": "Block User",
+        "reportUser": "Report User",
+        "stats": {
+            "totalMatches": "Total Matches",
+            "highCompatibility": "High Compatibility",
+            "activeConversations": "Active Conversations",
+            "totalConversations": "Total Conversations"
+        },
+        "tabs": {
+            "all": "All",
+            "recent": "Recent",
+            "highCompatibility": "High Compatibility",
+            "activeConversations": "Active Conversations"
+        },
+        "compatibility": {
+            "excellent": "Excellent",
+            "good": "Good",
+            "fair": "Fair"
+        },
+        "time": {
+            "matched": "Matched {{time}}",
+            "lastInteraction": "Last interaction {{time}}",
+            "yesterday": "Yesterday",
+            "daysAgo": "{{days}} days ago",
+            "weeksAgo": "{{weeks}} weeks ago"
+        },
+        "empty": {
+            "noMatches": "No matches found",
+            "startDiscovering": "Start discovering matches to see them here!",
+            "noFilter": "No matches match the current filter."
+        },
+        "details": {
+            "conversations": "Conversations",
+            "matchedOn": "Matched on {{date}}"
+        }
+    },
+    "theater": {
+        "liveMatching": "Live Matching Theater",
+        "watchConversation": "Watch Conversation",
+        "yourAvatar": "Your Avatar",
+        "matchAvatar": "Match Avatar",
+        "conversation": "Conversation",
+        "compatibilityMetrics": "Compatibility Metrics",
+        "provideGuidance": "Provide Guidance",
+        "giveFeedback": "Give Feedback",
+        "endSession": "End Session",
+        "sessionSummary": "Session Summary",
+        "viewReport": "View Full Report"
+    },
+    "compatibility": {
+        "report": "Compatibility Report",
+        "overallScore": "Overall Compatibility",
+        "dimensions": "Compatibility Dimensions",
+        "communication": "Communication",
+        "values": "Values Alignment",
+        "conflictResolution": "Conflict Resolution",
+        "lifestyle": "Lifestyle Compatibility",
+        "emotionalConnection": "Emotional Connection",
+        "insights": "Key Insights",
+        "recommendations": "Recommendations",
+        "conversationHighlights": "Conversation Highlights",
+        "trends": "Compatibility Trends"
+    },
+    "messages": {
+        "title": "Messages",
+        "conversations": "Conversations",
+        "newMessage": "New Message",
+        "sendMessage": "Send Message",
+        "typeMessage": "Type a message...",
+        "noMessages": "No messages yet",
+        "startConversation": "Start a conversation",
+        "selectConversation": "Select a conversation to start messaging",
+        "online": "Online",
+        "offline": "Offline",
+        "typing": "typing...",
+        "seen": "Seen",
+        "delivered": "Delivered",
+        "error": "Failed to load conversation. Please try again."
+    },
+    "notifications": {
+        "title": "Notifications",
+        "markAllRead": "Mark All as Read",
+        "markAsRead": "Mark as Read",
+        "viewDetails": "View Details",
+        "noNotifications": "No notifications",
+        "noUnread": "No unread notifications",
+        "allCaughtUp": "All caught up! Check back later for new notifications.",
+        "checkLater": "We'll notify you when something interesting happens!",
+        "retry": "Retry",
+        "types": {
+            "newMatch": "New Match",
+            "match": "Match!",
+            "mutualMatch": "Match!",
+            "newMessage": "New Message",
+            "message": "Message",
+            "like": "Like",
+            "superLike": "Super Like",
+            "profileView": "Profile View",
+            "sessionStarted": "Session Started",
+            "sessionCompleted": "Session Completed",
+            "reportReady": "Report Ready"
+        },
+        "tabs": {
+            "all": "All",
+            "unread": "Unread"
+        },
+        "badges": {
+            "new": "New"
+        },
+        "time": {
+            "read": "Read {{time}}"
+        },
+        "preferences": "Notification Preferences",
+        "emailNotifications": "Email Notifications",
+        "pushNotifications": "Push Notifications",
+        "inAppNotifications": "In-App Notifications"
+    },
+    "profile": {
+        "title": "Profile Management",
+        "editProfile": "Edit Profile",
+        "basicInfo": "Basic Information",
+        "photos": "Photos",
+        "profilePhotos": "Profile Photos",
+        "uploadPhoto": "Upload Photo",
+        "addPhoto": "Add Photo",
+        "uploading": "Uploading...",
+        "primaryPhoto": "Primary",
+        "bio": "Bio",
+        "interests": "Interests",
+        "preferences": "Preferences",
+        "privacy": "Privacy Settings",
+        "privacySettings": "Privacy Settings",
+        "verification": "Verification",
+        "profileVerification": "Profile Verification",
+        "subscription": "Subscription",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "dateOfBirth": "Date of Birth",
+        "gender": "Gender",
+        "location": "Location",
+        "completeness": "Profile Completeness",
+        "completeProfile": "Complete your profile to improve match quality and visibility",
+        "tabs": {
+            "basicInfo": "Basic Info",
+            "photos": "Photos",
+            "privacy": "Privacy",
+            "notifications": "Notifications",
+            "verification": "Verification"
+        },
+        "genderOptions": {
+            "preferNotToSay": "Prefer not to say",
+            "male": "Male",
+            "female": "Female",
+            "nonBinary": "Non-binary",
+            "other": "Other"
+        },
+        "photoInfo": "Add up to 6 photos. Your primary photo will be shown in match discovery.",
+        "characterCount": "{{count}}/500 characters",
+        "locationPlaceholder": "City, State",
+        "verification": {
+            "verified": "Your profile is verified!",
+            "verifiedDescription": "Verified profiles get more visibility and trust from other users.",
+            "whyVerify": "Why verify your profile?",
+            "benefits": {
+                "trust": "Increase trust with potential matches",
+                "priority": "Get priority in match discovery",
+                "badge": "Stand out with a verified badge",
+                "features": "Access to premium features"
+            },
+            "requestVerification": "Request Verification",
+            "requestTitle": "Request Profile Verification",
+            "requestDescription": "To verify your profile, we'll need to review your account and photos. This process typically takes 24-48 hours.",
+            "requirements": "Make sure you have:",
+            "requirementsList": {
+                "photo": "At least one clear photo of yourself",
+                "assessment": "Completed your personality assessment",
+                "bio": "Filled out your bio and basic information"
+            },
+            "submitRequest": "Submit Request"
+        },
+        "subscription": {
+            "plan": "{{tier}} Plan",
+            "free": "Basic features included",
+            "premium": "Unlimited matching and AI sessions",
+            "pro": "All features + advanced analytics",
+            "upgrade": "Upgrade Plan"
+        },
+        "privacy": {
+            "profileVisibility": "Profile Visibility",
+            "visibilityOptions": {
+                "public": "Public - Visible to everyone",
+                "friends": "Friends - Visible to matches only",
+                "private": "Private - Hidden from discovery"
+            },
+            "showAge": "Show my age on profile",
+            "showLocation": "Show my location",
+            "showLastActive": "Show when I was last active",
+            "showInDiscovery": "Show my profile in match discovery",
+            "allowMessagesFrom": "Allow Messages From",
+            "messageOptions": {
+                "everyone": "Everyone",
+                "matches": "Matches only",
+                "none": "No one"
+            },
+            "save": "Save Privacy Settings"
+        },
+        "notifications": {
+            "title": "Notification Preferences",
+            "email": "Email Notifications",
+            "push": "Push Notifications",
+            "newMatches": "New matches",
+            "newMessages": "New messages",
+            "compatibilityReports": "Compatibility reports",
+            "aiSessionUpdates": "AI session updates",
+            "save": "Save Notification Preferences"
+        },
+        "actions": {
+            "saveChanges": "Save Changes",
+            "saving": "Saving..."
+        },
+        "messages": {
+            "success": "Profile updated successfully!",
+            "photoUploaded": "Photo uploaded successfully!",
+            "photoDeleted": "Photo deleted successfully!",
+            "primaryPhotoUpdated": "Primary photo updated!",
+            "privacyUpdated": "Privacy settings updated successfully!",
+            "notificationsUpdated": "Notification preferences updated successfully!",
+            "verificationRequested": "Verification request submitted! You will be notified once reviewed.",
+            "error": "Failed to update profile",
+            "photoUploadError": "Failed to upload photo",
+            "photoDeleteError": "Failed to delete photo",
+            "primaryPhotoError": "Failed to set primary photo",
+            "privacyError": "Failed to update privacy settings",
+            "notificationsError": "Failed to update notification preferences",
+            "verificationError": "Failed to request verification"
+        }
+    },
+    "settings": {
+        "title": "Settings",
+        "account": "Account Settings",
+        "language": "Language",
+        "theme": "Theme",
+        "lightMode": "Light Mode",
+        "darkMode": "Dark Mode",
+        "highContrast": "High Contrast",
+        "fontSize": "Font Size",
+        "accessibility": "Accessibility",
+        "privacy": "Privacy",
+        "notifications": "Notifications",
+        "security": "Security",
+        "changePassword": "Change Password",
+        "deleteAccount": "Delete Account",
+        "culturalPreferences": "Cultural Preferences"
+    },
+    "scenarios": {
+        "title": "Relationship Scenarios",
+        "library": "Scenario Library",
+        "startSimulation": "Start Simulation",
+        "categories": {
+            "financial": "Financial Decisions",
+            "family": "Family Matters",
+            "lifestyle": "Lifestyle Choices",
+            "conflict": "Conflict Resolution",
+            "parenting": "Parenting Discussions"
+        },
+        "difficulty": "Difficulty",
+        "duration": "Duration",
+        "results": "Simulation Results"
+    },
+    "dashboard": {
+        "welcome": "Welcome back, {{name}}",
+        "subtitle": "Your AI-powered matchmaking dashboard",
+        "recentMatches": "Recent Matches",
+        "upcomingSessions": "Upcoming Sessions",
+        "activityFeed": "Activity Feed",
+        "recentActivity": "Recent Activity",
+        "compatibilityTrends": "Compatibility Trends",
+        "recommendations": "Recommendations for You",
+        "profileCompleteness": "Profile Completeness",
+        "personalityAssessment": "Personality Assessment",
+        "quickActions": "Quick Actions",
+        "stats": {
+            "totalMatches": "Total Matches",
+            "activeChats": "Active Chats",
+            "aiSessions": "AI Sessions",
+            "reports": "Reports",
+            "successfulMatches": "Successful Matches",
+            "averageCompatibility": "Average Compatibility",
+            "sessionsCompleted": "Sessions Completed"
+        },
+        "status": {
+            "notStarted": "Start your personality assessment to unlock AI matchmaking",
+            "incomplete": "Your profile is {{percent}}% complete",
+            "complete": "Your personality profile is complete and ready for matching!"
+        },
+        "actions": {
+            "startAssessment": "Start Assessment",
+            "completeAssessment": "Complete Assessment",
+            "viewProfile": "View Profile",
+            "discoverMatches": "Discover Matches",
+            "myMatches": "My Matches",
+            "aiAvatar": "AI Avatar",
+            "editProfile": "Edit Profile"
+        },
+        "empty": {
+            "noActivity": "No recent activity. Start exploring matches!",
+            "allSet": "You're all set! Keep exploring matches.",
+            "noTrends": "Average compatibility scores over the past 30 days"
+        },
+        "descriptions": {
+            "discoverMatches": "Find compatible partners",
+            "myMatches": "View your connections",
+            "aiAvatar": "Manage your avatar",
+            "editProfile": "Update your information"
+        }
+    },
+    "errors": {
+        "generic": "Something went wrong. Please try again.",
+        "network": "Network error. Please check your connection.",
+        "authentication": "Authentication failed. Please log in again.",
+        "validation": "Please check your input and try again.",
+        "notFound": "The requested resource was not found.",
+        "serverError": "Server error. Please try again later.",
+        "unauthorized": "You don't have permission to access this resource.",
+        "sessionExpired": "Your session has expired. Please log in again."
+    },
+    "accessibility": {
+        "skipToContent": "Skip to main content",
+        "openMenu": "Open menu",
+        "closeMenu": "Close menu",
+        "toggleTheme": "Toggle theme",
+        "changeLanguage": "Change language",
+        "increaseFontSize": "Increase font size",
+        "decreaseFontSize": "Decrease font size",
+        "screenReaderOnly": "Screen reader only content"
+    }
+}

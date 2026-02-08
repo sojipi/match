@@ -85,8 +85,8 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onCancel, onSave }) =
     } = useForm<ProfileFormData>({
         resolver: zodResolver(profileSchema),
         defaultValues: {
-            firstName: user?.firstName || '',
-            lastName: user?.lastName || '',
+            firstName: user?.first_name || '',
+            lastName: user?.last_name || '',
             email: user?.email || '',
             bio: '', // TODO: Add bio to user state
             location: '', // TODO: Add location to user state
@@ -220,9 +220,9 @@ const UserProfileForm: React.FC<UserProfileFormProps> = ({ onCancel, onSave }) =
                         <Avatar
                             sx={{ width: 80, height: 80, mr: 2 }}
                             src={avatarPreview || '/static/images/avatar/1.jpg'}
-                            alt={`${user?.firstName} ${user?.lastName}`}
+                            alt={`${user?.first_name} ${user?.last_name}`}
                         >
-                            {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                            {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}
                         </Avatar>
                         <Box>
                             <input

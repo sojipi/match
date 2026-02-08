@@ -514,12 +514,29 @@ async def get_user_dashboard(
     from app.services.match_service import MatchService
     from app.services.compatibility_service import CompatibilityService
     from app.models.match import Match, MatchStatus, MatchSession, MatchSessionStatus
-    from app.models.conversation import Conversation
+    from app.models.conversation import ConversationSession
     from app.models.notification import Notification
+    from app.models.user import User
     from sqlalchemy import select, func, and_, or_, desc
+    from sqlalchemy.orm import selectinload
     from datetime import datetime, timedelta
-    
+
     user_id = str(current_user.id)
+
+    # Load user with relationships to avoid lazy loading issues
+    user_query = select(User).options(
+        selectinload(User.personality_profile),
+        selectinload(User.photos)
+    ).where(User.id == current_user.id)
+    user_result = await db.execute(user_query)
+    user = user_result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
     match_service = MatchService(db)
     compatibility_service = CompatibilityService(db)
     
@@ -534,10 +551,10 @@ async def get_user_dashboard(
     total_matches = mutual_matches_result.scalar() or 0
     
     # Get active conversations count
-    active_conversations_query = select(func.count(Conversation.id)).where(
+    active_conversations_query = select(func.count(ConversationSession.id)).where(
         and_(
-            or_(Conversation.user1_id == user_id, Conversation.user2_id == user_id),
-            Conversation.status == "active"
+            or_(ConversationSession.user1_id == user_id, ConversationSession.user2_id == user_id),
+            ConversationSession.status == "active"
         )
     )
     active_conversations_result = await db.execute(active_conversations_query)
@@ -555,7 +572,7 @@ async def get_user_dashboard(
     compatibility_reports_result = await db.execute(compatibility_reports_query)
     compatibility_reports = compatibility_reports_result.scalar() or 0
     
-    # Get AI sessions count
+    # Get AI sessions count (completed match sessions)
     ai_sessions_query = select(func.count(MatchSession.id)).where(
         and_(
             or_(MatchSession.user1_id == user_id, MatchSession.user2_id == user_id),
@@ -638,9 +655,9 @@ async def get_user_dashboard(
     recommendations = []
     
     # Check profile completeness
-    if not current_user.personality_profile or (
-        current_user.personality_profile and 
-        current_user.personality_profile.completeness_score < 0.8
+    if not user.personality_profile or (
+        user.personality_profile and
+        user.personality_profile.completeness_score < 0.8
     ):
         recommendations.append({
             "type": "profile",
@@ -648,18 +665,18 @@ async def get_user_dashboard(
             "message": "Complete your personality assessment to improve match quality",
             "action_url": "/personality-assessment"
         })
-    
+
     # Check for photos
-    if not current_user.photos or len(current_user.photos) == 0:
+    if not user.photos or len(user.photos) == 0:
         recommendations.append({
             "type": "photos",
             "priority": "high",
             "message": "Add photos to your profile to attract more matches",
             "action_url": "/profile/photos"
         })
-    
+
     # Check for bio
-    if not current_user.bio or len(current_user.bio) < 50:
+    if not user.bio or len(user.bio) < 50:
         recommendations.append({
             "type": "bio",
             "priority": "medium",
@@ -706,5 +723,5 @@ async def get_user_dashboard(
         "activity_feed": activity_feed,
         "compatibility_trends": compatibility_trends,
         "recommendations": recommendations,
-        "profile_completeness": current_user.personality_profile.completeness_score if current_user.personality_profile else 0.0
+        "profile_completeness": user.personality_profile.completeness_score if user.personality_profile else 0.0
     }

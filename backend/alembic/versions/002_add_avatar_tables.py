@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '002'
+revision = '002_add_avatar_tables'
 down_revision = None
 branch_labels = None
 depends_on = None

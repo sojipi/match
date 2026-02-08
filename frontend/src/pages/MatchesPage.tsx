@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Box,
     Container,
@@ -66,6 +67,7 @@ interface MatchHistoryResponse {
 
 const MatchesPage: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [matches, setMatches] = useState<MatchHistoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -169,9 +171,9 @@ const MatchesPage: React.FC = () => {
     };
 
     const getCompatibilityLabel = (score: number) => {
-        if (score >= 0.8) return 'Excellent';
-        if (score >= 0.6) return 'Good';
-        return 'Fair';
+        if (score >= 0.8) return t('matches.compatibility.excellent');
+        if (score >= 0.6) return t('matches.compatibility.good');
+        return t('matches.compatibility.fair');
     };
 
     const formatDate = (dateString: string) => {
@@ -180,9 +182,9 @@ const MatchesPage: React.FC = () => {
         const diffTime = Math.abs(now.getTime() - date.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        if (diffDays === 1) return 'Yesterday';
-        if (diffDays < 7) return `${diffDays} days ago`;
-        if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+        if (diffDays === 1) return t('matches.time.yesterday');
+        if (diffDays < 7) return t('matches.time.daysAgo', { days: diffDays });
+        if (diffDays < 30) return t('matches.time.weeksAgo', { weeks: Math.ceil(diffDays / 7) });
         return date.toLocaleDateString();
     };
 
@@ -219,7 +221,7 @@ const MatchesPage: React.FC = () => {
             <Container maxWidth="md" sx={{ mt: 4 }}>
                 <Alert severity="error" action={
                     <Button color="inherit" size="small" onClick={loadMatches}>
-                        Retry
+                        {t('common.retry')}
                     </Button>
                 }>
                     {error}
@@ -235,14 +237,14 @@ const MatchesPage: React.FC = () => {
             {/* Header */}
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h4" component="h1">
-                    Your Matches
+                    {t('matches.title')}
                 </Typography>
                 <Button
                     variant="contained"
                     onClick={() => navigate('/discover')}
                     startIcon={<Favorite />}
                 >
-                    Discover More
+                    {t('matches.discoverMore')}
                 </Button>
             </Box>
 
@@ -255,7 +257,7 @@ const MatchesPage: React.FC = () => {
                                 {matches.length}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                Total Matches
+                                {t('matches.stats.totalMatches')}
                             </Typography>
                         </CardContent>
                     </Card>
@@ -267,7 +269,7 @@ const MatchesPage: React.FC = () => {
                                 {matches.filter(m => m.compatibility_score >= 0.8).length}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                High Compatibility
+                                {t('matches.stats.highCompatibility')}
                             </Typography>
                         </CardContent>
                     </Card>
@@ -279,7 +281,7 @@ const MatchesPage: React.FC = () => {
                                 {matches.filter(m => m.conversation_count > 0).length}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                Active Conversations
+                                {t('matches.stats.activeConversations')}
                             </Typography>
                         </CardContent>
                     </Card>
@@ -291,7 +293,7 @@ const MatchesPage: React.FC = () => {
                                 {matches.reduce((sum, m) => sum + m.conversation_count, 0)}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                Total Conversations
+                                {t('matches.stats.totalConversations')}
                             </Typography>
                         </CardContent>
                     </Card>
@@ -301,10 +303,10 @@ const MatchesPage: React.FC = () => {
             {/* Tabs */}
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
                 <Tabs value={currentTab} onChange={handleTabChange}>
-                    <Tab label={`All (${matches.length})`} />
-                    <Tab label="Recent" />
-                    <Tab label="High Compatibility" />
-                    <Tab label="Active Conversations" />
+                    <Tab label={`${t('matches.tabs.all')} (${matches.length})`} />
+                    <Tab label={t('matches.tabs.recent')} />
+                    <Tab label={t('matches.tabs.highCompatibility')} />
+                    <Tab label={t('matches.tabs.activeConversations')} />
                 </Tabs>
             </Box>
 
@@ -312,12 +314,12 @@ const MatchesPage: React.FC = () => {
             {filteredMatches.length === 0 ? (
                 <Box textAlign="center" py={8}>
                     <Typography variant="h6" gutterBottom>
-                        No matches found
+                        {t('matches.empty.noMatches')}
                     </Typography>
                     <Typography variant="body1" color="text.secondary" paragraph>
                         {currentTab === 0
-                            ? "Start discovering matches to see them here!"
-                            : "No matches match the current filter."
+                            ? t('matches.empty.startDiscovering')
+                            : t('matches.empty.noFilter')
                         }
                     </Typography>
                     <Button
@@ -325,7 +327,7 @@ const MatchesPage: React.FC = () => {
                         onClick={() => navigate('/discover')}
                         startIcon={<Favorite />}
                     >
-                        Discover Matches
+                        {t('matching.discover')}
                     </Button>
                 </Box>
             ) : (
@@ -377,12 +379,12 @@ const MatchesPage: React.FC = () => {
                                     secondary={
                                         <Box>
                                             <Typography variant="body2" color="text.secondary">
-                                                {getCompatibilityLabel(match.compatibility_score)} compatibility
+                                                {getCompatibilityLabel(match.compatibility_score)} {t('matching.compatibility')}
                                             </Typography>
                                             <Typography variant="caption" color="text.secondary">
-                                                Matched {formatDate(match.created_at)}
+                                                {t('matches.details.matchedOn')} {formatDate(match.created_at)}
                                                 {match.last_interaction && (
-                                                    <> • Last interaction {formatDate(match.last_interaction)}</>
+                                                    <> • {t('matches.details.lastInteraction')} {formatDate(match.last_interaction)}</>
                                                 )}
                                             </Typography>
                                         </Box>
@@ -400,7 +402,7 @@ const MatchesPage: React.FC = () => {
                                                 navigate(`/messages/${match.id}`);
                                             }}
                                         >
-                                            Message
+                                            {t('matches.message')}
                                         </Button>
                                         <Button
                                             variant="outlined"
@@ -411,7 +413,7 @@ const MatchesPage: React.FC = () => {
                                                 handleStartConversation(match.id);
                                             }}
                                         >
-                                            AI Chat
+                                            {t('matches.aiChat')}
                                         </Button>
                                         <Button
                                             variant="outlined"
@@ -422,7 +424,7 @@ const MatchesPage: React.FC = () => {
                                                 handleViewCompatibility(match);
                                             }}
                                         >
-                                            Report
+                                            {t('matches.report')}
                                         </Button>
                                         <IconButton
                                             onClick={(e) => handleMenuClick(e, match)}
@@ -461,7 +463,7 @@ const MatchesPage: React.FC = () => {
                                         {selectedMatch.user.name}
                                     </Typography>
                                     <Chip
-                                        label={`${Math.round(selectedMatch.compatibility_score * 100)}% Compatible`}
+                                        label={`${Math.round(selectedMatch.compatibility_score * 100)}% ${t('matching.compatibility')}`}
                                         color={getCompatibilityColor(selectedMatch.compatibility_score)}
                                         size="small"
                                     />
@@ -476,7 +478,7 @@ const MatchesPage: React.FC = () => {
                                             {selectedMatch.conversation_count}
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
-                                            Conversations
+                                            {t('matches.details.conversations')}
                                         </Typography>
                                     </Box>
                                 </Grid>
@@ -486,7 +488,7 @@ const MatchesPage: React.FC = () => {
                                             {Math.round(selectedMatch.compatibility_score * 100)}%
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary">
-                                            Compatibility
+                                            {t('matches.details.compatibility')}
                                         </Typography>
                                     </Box>
                                 </Grid>
@@ -494,18 +496,18 @@ const MatchesPage: React.FC = () => {
 
                             <Box mt={3}>
                                 <Typography variant="body2" color="text.secondary">
-                                    Matched on {formatDate(selectedMatch.created_at)}
+                                    {t('matches.details.matchedOn')} {formatDate(selectedMatch.created_at)}
                                 </Typography>
                                 {selectedMatch.last_interaction && (
                                     <Typography variant="body2" color="text.secondary">
-                                        Last interaction: {formatDate(selectedMatch.last_interaction)}
+                                        {t('matches.details.lastInteraction')}: {formatDate(selectedMatch.last_interaction)}
                                     </Typography>
                                 )}
                             </Box>
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={() => setShowMatchDetails(false)}>
-                                Close
+                                {t('matches.details.close')}
                             </Button>
                             <Button
                                 variant="outlined"
@@ -515,7 +517,7 @@ const MatchesPage: React.FC = () => {
                                     handleViewCompatibility(selectedMatch);
                                 }}
                             >
-                                View Report
+                                {t('matches.details.viewReport')}
                             </Button>
                             <Button
                                 variant="outlined"
@@ -525,7 +527,7 @@ const MatchesPage: React.FC = () => {
                                     navigate(`/messages/${selectedMatch.id}`);
                                 }}
                             >
-                                Direct Message
+                                {t('matches.details.directMessage')}
                             </Button>
                             <Button
                                 variant="contained"
@@ -535,7 +537,7 @@ const MatchesPage: React.FC = () => {
                                     handleStartConversation(selectedMatch.id);
                                 }}
                             >
-                                AI Conversation
+                                {t('matches.details.aiConversation')}
                             </Button>
                         </DialogActions>
                     </>
@@ -555,7 +557,7 @@ const MatchesPage: React.FC = () => {
                     handleMenuClose();
                 }}>
                     <Message sx={{ mr: 1 }} />
-                    Direct Message
+                    {t('matches.details.directMessage')}
                 </MenuItem>
                 <MenuItem onClick={() => {
                     if (selectedMatchForMenu) {
@@ -564,7 +566,7 @@ const MatchesPage: React.FC = () => {
                     handleMenuClose();
                 }}>
                     <Message sx={{ mr: 1 }} />
-                    AI Conversation
+                    {t('matches.details.aiConversation')}
                 </MenuItem>
                 <MenuItem onClick={() => {
                     if (selectedMatchForMenu) {
@@ -573,7 +575,7 @@ const MatchesPage: React.FC = () => {
                     handleMenuClose();
                 }}>
                     <Visibility sx={{ mr: 1 }} />
-                    View Compatibility Report
+                    {t('matches.details.viewReport')}
                 </MenuItem>
                 <MenuItem onClick={() => {
                     if (selectedMatchForMenu) {
@@ -582,7 +584,7 @@ const MatchesPage: React.FC = () => {
                     handleMenuClose();
                 }}>
                     <History sx={{ mr: 1 }} />
-                    View Conversation History
+                    {t('matches.details.viewHistory')}
                 </MenuItem>
                 <Divider />
                 <MenuItem onClick={() => {
@@ -591,7 +593,7 @@ const MatchesPage: React.FC = () => {
                     }
                 }}>
                     <Block sx={{ mr: 1 }} />
-                    Block User
+                    {t('matches.details.blockUser')}
                 </MenuItem>
                 <MenuItem onClick={() => {
                     if (selectedMatchForMenu) {
@@ -599,7 +601,7 @@ const MatchesPage: React.FC = () => {
                     }
                 }}>
                     <Report sx={{ mr: 1 }} />
-                    Report User
+                    {t('matches.details.reportUser')}
                 </MenuItem>
             </Menu>
         </Container>

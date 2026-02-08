@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
     Box,
     Typography,
@@ -79,6 +80,7 @@ interface DashboardData {
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { user } = useAppSelector(state => state.auth);
     const [personalityProfile, setPersonalityProfile] = useState<PersonalityProfile | null>(null);
     const [assessmentProgress, setAssessmentProgress] = useState<AssessmentProgress | null>(null);
@@ -141,26 +143,26 @@ const Dashboard: React.FC = () => {
         if (completeness === 0) {
             return {
                 status: 'not_started',
-                message: 'Start your personality assessment to unlock AI matchmaking',
+                message: t('dashboard.status.notStarted'),
                 color: 'warning' as const,
-                action: 'Start Assessment'
+                action: t('dashboard.actions.startAssessment')
             };
         }
 
         if (completeness < 0.8) {
             return {
                 status: 'incomplete',
-                message: `Your profile is ${Math.round(completeness * 100)}% complete`,
+                message: t('dashboard.status.incomplete', { percent: Math.round(completeness * 100) }),
                 color: 'info' as const,
-                action: 'Complete Assessment'
+                action: t('dashboard.actions.completeAssessment')
             };
         }
 
         return {
             status: 'complete',
-            message: 'Your personality profile is complete and ready for matching!',
+            message: t('dashboard.status.complete'),
             color: 'success' as const,
-            action: 'View Profile'
+            action: t('dashboard.actions.viewProfile')
         };
     };
 
@@ -198,10 +200,10 @@ const Dashboard: React.FC = () => {
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMins < 1) return 'Just now';
-        if (diffMins < 60) return `${diffMins}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
+        if (diffMins < 1) return t('dashboard.time.justNow');
+        if (diffMins < 60) return t('dashboard.time.minutesAgo', { minutes: diffMins });
+        if (diffHours < 24) return t('dashboard.time.hoursAgo', { hours: diffHours });
+        if (diffDays < 7) return t('dashboard.time.daysAgo', { days: diffDays });
         return date.toLocaleDateString();
     };
 
@@ -209,7 +211,7 @@ const Dashboard: React.FC = () => {
         return (
             <Box p={3}>
                 <Typography variant="h4" component="h1" gutterBottom>
-                    Dashboard
+                    {t('navigation.dashboard')}
                 </Typography>
                 <LinearProgress sx={{ mt: 2 }} />
             </Box>
@@ -230,14 +232,14 @@ const Dashboard: React.FC = () => {
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Box>
                     <Typography variant="h4" component="h1" gutterBottom>
-                        Welcome back, {user?.first_name || 'there'}!
+                        {t('dashboard.welcome', { name: user?.first_name || '' })}
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
-                        Your AI-powered matchmaking dashboard
+                        {t('dashboard.subtitle')}
                     </Typography>
                 </Box>
                 {stats.unread_notifications > 0 && (
-                    <Tooltip title="View notifications">
+                    <Tooltip title={t('notifications.title')}>
                         <IconButton onClick={() => navigate('/notifications')} color="primary">
                             <Notifications />
                             <Chip
@@ -260,7 +262,7 @@ const Dashboard: React.FC = () => {
                                 <Box>
                                     <Typography variant="h4">{stats.total_matches}</Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        Total Matches
+                                        {t('dashboard.stats.totalMatches')}
                                     </Typography>
                                 </Box>
                                 <Groups color="primary" sx={{ fontSize: 40 }} />
@@ -276,7 +278,7 @@ const Dashboard: React.FC = () => {
                                 <Box>
                                     <Typography variant="h4">{stats.active_conversations}</Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        Active Chats
+                                        {t('dashboard.stats.activeChats')}
                                     </Typography>
                                 </Box>
                                 <Chat color="primary" sx={{ fontSize: 40 }} />
@@ -292,7 +294,7 @@ const Dashboard: React.FC = () => {
                                 <Box>
                                     <Typography variant="h4">{stats.ai_sessions}</Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        AI Sessions
+                                        {t('dashboard.stats.aiSessions')}
                                     </Typography>
                                 </Box>
                                 <Psychology color="primary" sx={{ fontSize: 40 }} />
@@ -308,7 +310,7 @@ const Dashboard: React.FC = () => {
                                 <Box>
                                     <Typography variant="h4">{stats.compatibility_reports}</Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        Reports
+                                        {t('dashboard.stats.reports')}
                                     </Typography>
                                 </Box>
                                 <Assessment color="primary" sx={{ fontSize: 40 }} />
@@ -324,7 +326,7 @@ const Dashboard: React.FC = () => {
                             <Box display="flex" alignItems="center" mb={2}>
                                 <Psychology color="primary" sx={{ mr: 2 }} />
                                 <Typography variant="h6">
-                                    Personality Assessment
+                                    {t('dashboard.personalityAssessment')}
                                 </Typography>
                             </Box>
 
@@ -335,7 +337,7 @@ const Dashboard: React.FC = () => {
                             {dashboardData && dashboardData.profile_completeness > 0 && (
                                 <Box mb={2}>
                                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                                        Profile Completeness
+                                        {t('dashboard.profileCompleteness')}
                                     </Typography>
                                     <LinearProgress
                                         variant="determinate"
@@ -343,7 +345,7 @@ const Dashboard: React.FC = () => {
                                         sx={{ height: 8, borderRadius: 4, mb: 1 }}
                                     />
                                     <Typography variant="caption" color="text.secondary">
-                                        {Math.round(dashboardData.profile_completeness * 100)}% complete
+                                        {Math.round(dashboardData.profile_completeness * 100)}% {t('dashboard.complete')}
                                     </Typography>
                                 </Box>
                             )}
@@ -351,7 +353,7 @@ const Dashboard: React.FC = () => {
                             {assessmentProgress && assessmentProgress.insights.length > 0 && (
                                 <Box mb={2}>
                                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                                        Current Insights
+                                        {t('dashboard.insights')}
                                     </Typography>
                                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                                         {assessmentProgress.insights.slice(0, 3).map((insight) => (
@@ -386,7 +388,7 @@ const Dashboard: React.FC = () => {
                             <Box display="flex" alignItems="center" mb={2}>
                                 <TrendingUp color="primary" sx={{ mr: 2 }} />
                                 <Typography variant="h6">
-                                    Recommendations
+                                    {t('dashboard.recommendations')}
                                 </Typography>
                             </Box>
 
@@ -420,7 +422,7 @@ const Dashboard: React.FC = () => {
                                 <Box textAlign="center" py={3}>
                                     <CheckCircle color="success" sx={{ fontSize: 48, mb: 1 }} />
                                     <Typography variant="body2" color="text.secondary">
-                                        You're all set! Keep exploring matches.
+                                        {t('dashboard.empty.allSet')}
                                     </Typography>
                                 </Box>
                             )}
@@ -436,7 +438,7 @@ const Dashboard: React.FC = () => {
                                 <Box display="flex" alignItems="center" mb={2}>
                                     <Timeline color="primary" sx={{ mr: 2 }} />
                                     <Typography variant="h6">
-                                        Compatibility Trends
+                                        {t('dashboard.compatibilityTrends')}
                                     </Typography>
                                 </Box>
 
@@ -463,7 +465,7 @@ const Dashboard: React.FC = () => {
                                 </ResponsiveContainer>
 
                                 <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-                                    Average compatibility scores over the past 30 days
+                                    {t('dashboard.trendsDescription')}
                                 </Typography>
                             </CardContent>
                         </Card>
@@ -477,7 +479,7 @@ const Dashboard: React.FC = () => {
                             <Box display="flex" alignItems="center" mb={2}>
                                 <Notifications color="primary" sx={{ mr: 2 }} />
                                 <Typography variant="h6">
-                                    Recent Activity
+                                    {t('dashboard.recentActivity')}
                                 </Typography>
                             </Box>
 
@@ -504,7 +506,7 @@ const Dashboard: React.FC = () => {
                                 <Box textAlign="center" py={3}>
                                     <Info color="action" sx={{ fontSize: 48, mb: 1 }} />
                                     <Typography variant="body2" color="text.secondary">
-                                        No recent activity. Start exploring matches!
+                                        {t('dashboard.empty.noActivity')}
                                     </Typography>
                                     <Button
                                         variant="outlined"
@@ -512,7 +514,7 @@ const Dashboard: React.FC = () => {
                                         onClick={() => navigate('/discover')}
                                         sx={{ mt: 2 }}
                                     >
-                                        Discover Matches
+                                        {t('dashboard.actions.discoverMatches')}
                                     </Button>
                                 </Box>
                             )}
@@ -525,7 +527,7 @@ const Dashboard: React.FC = () => {
                     <Card>
                         <CardContent>
                             <Typography variant="h6" gutterBottom>
-                                Quick Actions
+                                {t('dashboard.quickActions')}
                             </Typography>
                             <Grid container spacing={2}>
                                 <Grid item xs={12} sm={6} md={3}>
@@ -542,9 +544,9 @@ const Dashboard: React.FC = () => {
                                         onClick={() => navigate('/discover')}
                                     >
                                         <Explore sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                                        <Typography variant="subtitle2">Discover Matches</Typography>
+                                        <Typography variant="subtitle2">{t('dashboard.actions.discoverMatches')}</Typography>
                                         <Typography variant="caption" color="text.secondary">
-                                            Find compatible partners
+                                            {t('dashboard.descriptions.discoverMatches')}
                                         </Typography>
                                     </Paper>
                                 </Grid>
@@ -562,9 +564,9 @@ const Dashboard: React.FC = () => {
                                         onClick={() => navigate('/matches')}
                                     >
                                         <Groups sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                                        <Typography variant="subtitle2">My Matches</Typography>
+                                        <Typography variant="subtitle2">{t('dashboard.actions.myMatches')}</Typography>
                                         <Typography variant="caption" color="text.secondary">
-                                            View your connections
+                                            {t('dashboard.descriptions.myMatches')}
                                         </Typography>
                                     </Paper>
                                 </Grid>
@@ -582,9 +584,9 @@ const Dashboard: React.FC = () => {
                                         onClick={() => navigate('/avatar')}
                                     >
                                         <Psychology sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                                        <Typography variant="subtitle2">AI Avatar</Typography>
+                                        <Typography variant="subtitle2">{t('dashboard.actions.aiAvatar')}</Typography>
                                         <Typography variant="caption" color="text.secondary">
-                                            Manage your avatar
+                                            {t('dashboard.descriptions.aiAvatar')}
                                         </Typography>
                                     </Paper>
                                 </Grid>
@@ -602,9 +604,9 @@ const Dashboard: React.FC = () => {
                                         onClick={() => navigate('/profile')}
                                     >
                                         <Edit sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
-                                        <Typography variant="subtitle2">Edit Profile</Typography>
+                                        <Typography variant="subtitle2">{t('dashboard.actions.editProfile')}</Typography>
                                         <Typography variant="caption" color="text.secondary">
-                                            Update your information
+                                            {t('dashboard.descriptions.editProfile')}
                                         </Typography>
                                     </Paper>
                                 </Grid>

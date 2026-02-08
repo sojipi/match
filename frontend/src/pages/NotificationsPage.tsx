@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Box,
     Container,
@@ -60,6 +61,7 @@ interface NotificationListResponse {
 
 const NotificationsPage: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -175,9 +177,9 @@ const NotificationsPage: React.FC = () => {
         const diffTime = Math.abs(now.getTime() - date.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        if (diffDays === 1) return 'Yesterday';
-        if (diffDays < 7) return `${diffDays} days ago`;
-        if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+        if (diffDays === 1) return t('matches.time.yesterday');
+        if (diffDays < 7) return t('matches.time.daysAgo', { days: diffDays });
+        if (diffDays < 30) return t('matches.time.weeksAgo', { weeks: Math.ceil(diffDays / 7) });
         return date.toLocaleDateString();
     };
 
@@ -198,7 +200,7 @@ const NotificationsPage: React.FC = () => {
             {/* Header */}
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h4" component="h1">
-                    Notifications
+                    {t('notifications.title')}
                 </Typography>
                 {unreadCount > 0 && (
                     <Button
@@ -206,7 +208,7 @@ const NotificationsPage: React.FC = () => {
                         startIcon={<MarkEmailRead />}
                         onClick={handleMarkAllRead}
                     >
-                        Mark All Read ({unreadCount})
+                        {t('notifications.markAllRead')} ({unreadCount})
                     </Button>
                 )}
             </Box>
@@ -214,7 +216,7 @@ const NotificationsPage: React.FC = () => {
             {error && (
                 <Alert severity="error" sx={{ mb: 3 }} action={
                     <Button color="inherit" size="small" onClick={loadNotifications}>
-                        Retry
+                        {t('common.retry')}
                     </Button>
                 }>
                     {error}
@@ -224,8 +226,8 @@ const NotificationsPage: React.FC = () => {
             {/* Tabs */}
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
                 <Tabs value={currentTab} onChange={handleTabChange}>
-                    <Tab label={`All (${notifications.length})`} />
-                    <Tab label={`Unread (${unreadCount})`} />
+                    <Tab label={`${t('notifications.tabs.all')} (${notifications.length})`} />
+                    <Tab label={`${t('notifications.tabs.unread')} (${unreadCount})`} />
                 </Tabs>
             </Box>
 
@@ -233,12 +235,12 @@ const NotificationsPage: React.FC = () => {
             {filteredNotifications.length === 0 ? (
                 <Box textAlign="center" py={8}>
                     <Typography variant="h6" gutterBottom>
-                        {currentTab === 1 ? 'No unread notifications' : 'No notifications yet'}
+                        {currentTab === 1 ? t('notifications.noUnread') : t('notifications.noNotifications')}
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
                         {currentTab === 1
-                            ? 'All caught up! Check back later for new notifications.'
-                            : 'We\'ll notify you when something interesting happens!'
+                            ? t('notifications.allCaughtUp')
+                            : t('notifications.checkLater')
                         }
                     </Typography>
                 </Box>
@@ -285,14 +287,14 @@ const NotificationsPage: React.FC = () => {
                                             </Typography>
                                             {notification.type === 'mutual_match' && (
                                                 <Chip
-                                                    label="Match!"
+                                                    label={t('notifications.labels.match')}
                                                     color="error"
                                                     size="small"
                                                 />
                                             )}
                                             {!notification.is_read && (
                                                 <Chip
-                                                    label="New"
+                                                    label={t('notifications.labels.new')}
                                                     color="primary"
                                                     size="small"
                                                     variant="outlined"
@@ -317,7 +319,7 @@ const NotificationsPage: React.FC = () => {
                                             <Typography component="span" variant="caption" color="text.secondary">
                                                 {formatDate(notification.created_at)}
                                                 {notification.read_at && (
-                                                    <> • Read {formatDate(notification.read_at)}</>
+                                                    <> • {t('notifications.labels.read')} {formatDate(notification.read_at)}</>
                                                 )}
                                             </Typography>
                                         </React.Fragment>
@@ -361,7 +363,7 @@ const NotificationsPage: React.FC = () => {
                         handleMenuClose();
                     }}>
                         <MarkEmailRead sx={{ mr: 1 }} />
-                        Mark as Read
+                        {t('notifications.actions.markRead')}
                     </MenuItem>
                 )}
                 {selectedNotification?.action_url && (
@@ -372,7 +374,7 @@ const NotificationsPage: React.FC = () => {
                         handleMenuClose();
                     }}>
                         <Visibility sx={{ mr: 1 }} />
-                        View Details
+                        {t('notifications.actions.view')}
                     </MenuItem>
                 )}
             </Menu>

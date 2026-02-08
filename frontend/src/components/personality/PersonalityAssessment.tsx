@@ -2,6 +2,7 @@
  * Interactive Personality Assessment Component
  */
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Box,
     Card,
@@ -30,6 +31,7 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
     onComplete,
     onProgress
 }) => {
+    const { t } = useTranslation();
     const [questions, setQuestions] = useState<PersonalityQuestion[]>([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<PersonalityAnswer[]>([]);
@@ -69,7 +71,7 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
                 onProgress(progressData);
             }
         } catch (err) {
-            setError('Failed to load assessment. Please try again.');
+            setError(t('personality.component.error'));
             console.error('Assessment loading error:', err);
         } finally {
             setIsLoading(false);
@@ -132,7 +134,7 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
 
             onComplete(profile);
         } catch (err) {
-            setError('Failed to submit assessment. Please try again.');
+            setError(t('personality.component.error'));
             console.error('Assessment submission error:', err);
         } finally {
             setIsSubmitting(false);
@@ -149,7 +151,7 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
                 <Box textAlign="center">
                     <LinearProgress sx={{ width: 200, mb: 2 }} />
                     <Typography variant="body2" color="text.secondary">
-                        Loading your personality assessment...
+                        {t('personality.component.loading')}
                     </Typography>
                 </Box>
             </Box>
@@ -161,7 +163,7 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
             <Alert severity="error" sx={{ mb: 2 }}>
                 {error}
                 <Button onClick={loadAssessmentData} sx={{ ml: 2 }}>
-                    Retry
+                    {t('personality.component.retry')}
                 </Button>
             </Alert>
         );
@@ -179,10 +181,13 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
                 <CardContent>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                         <Typography variant="h5" component="h1">
-                            Personality Assessment
+                            {t('personality.component.title')}
                         </Typography>
                         <Chip
-                            label={`${currentQuestionIndex + 1} of ${questions.length}`}
+                            label={t('personality.component.questionCount', {
+                                current: currentQuestionIndex + 1,
+                                total: questions.length
+                            })}
                             color="primary"
                             variant="outlined"
                         />
@@ -196,7 +201,9 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
 
                     <Box display="flex" justifyContent="space-between" alignItems="center">
                         <Typography variant="body2" color="text.secondary">
-                            {progress && `${Math.round(progress.completion_percentage)}% complete`}
+                            {progress && t('personality.component.percentComplete', {
+                                percent: Math.round(progress.completion_percentage)
+                            })}
                         </Typography>
 
                         {progress && progress.insights.length > 0 && (
@@ -205,7 +212,10 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
                                 onClick={toggleInsights}
                                 variant="outlined"
                             >
-                                {showInsights ? 'Hide' : 'Show'} Insights ({progress.insights.length})
+                                {showInsights
+                                    ? t('personality.component.hideInsights')
+                                    : t('personality.component.showInsights')
+                                } {t('personality.component.insightsCount', { count: progress.insights.length })}
                             </Button>
                         )}
                     </Box>
@@ -250,7 +260,7 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
                     disabled={currentQuestionIndex === 0}
                     variant="outlined"
                 >
-                    Previous
+                    {t('personality.component.previous')}
                 </Button>
 
                 <Stack direction="row" spacing={2}>
@@ -261,7 +271,7 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
                             variant="contained"
                             size="large"
                         >
-                            {isSubmitting ? 'Completing Assessment...' : 'Complete Assessment'}
+                            {isSubmitting ? t('personality.component.completing') : t('personality.component.completeAssessment')}
                         </Button>
                     ) : (
                         <Button
@@ -270,7 +280,7 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
                             variant="contained"
                             size="large"
                         >
-                            Next Question
+                            {t('personality.component.nextQuestion')}
                         </Button>
                     )}
                 </Stack>
@@ -280,7 +290,7 @@ const PersonalityAssessment: React.FC<PersonalityAssessmentProps> = ({
             {progress && (
                 <Box mt={3} textAlign="center">
                     <Typography variant="body2" color="text.secondary">
-                        Estimated time remaining: {progress.estimated_time_remaining} minutes
+                        {t('personality.component.estimatedTime', { minutes: progress.estimated_time_remaining })}
                     </Typography>
                 </Box>
             )}

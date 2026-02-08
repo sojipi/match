@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Box,
     AppBar,
@@ -48,21 +49,12 @@ interface AppLayoutProps {
 
 const drawerWidth = 240;
 
-const navigationItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Discover', icon: <SearchIcon />, path: '/discover' },
-    { text: 'Matches', icon: <FavoriteIcon />, path: '/matches' },
-    { text: 'Messages', icon: <MessageIcon />, path: '/messages' },
-    { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications' },
-    { text: 'AI Avatar', icon: <PsychologyIcon />, path: '/avatar' },
-    { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
-];
-
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     const theme = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     const { user } = useAppSelector(state => state.auth);
@@ -74,6 +66,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     const { announcementRef, announceToScreenReader } = useAccessibility({
         announcePageChange: true,
     });
+
+    // Navigation items with translations
+    const navigationItems = [
+        { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/dashboard' },
+        { text: t('navigation.discover'), icon: <SearchIcon />, path: '/discover' },
+        { text: t('navigation.matches'), icon: <FavoriteIcon />, path: '/matches' },
+        { text: t('navigation.messages'), icon: <MessageIcon />, path: '/messages' },
+        { text: t('navigation.notifications'), icon: <NotificationsIcon />, path: '/notifications' },
+        { text: t('navigation.avatar'), icon: <PsychologyIcon />, path: '/avatar' },
+        { text: t('navigation.profile'), icon: <PersonIcon />, path: '/profile' },
+    ];
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
@@ -91,13 +94,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         dispatch(logout());
         handleProfileMenuClose();
         navigate('/');
-        announceToScreenReader('Logged out successfully');
+        announceToScreenReader(t('auth.logoutSuccess'));
     };
 
     const handleThemeToggle = () => {
         dispatch(toggleTheme());
         const newMode = mode === 'light' ? 'dark' : 'light';
-        announceToScreenReader(`Switched to ${newMode} mode`);
+        announceToScreenReader(t('accessibility.themeSwitched', { mode: newMode }));
     };
 
     const handleNavigation = (path: string, itemText: string) => {
@@ -105,7 +108,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         if (isMobile) {
             setMobileOpen(false);
         }
-        announceToScreenReader(`Navigated to ${itemText}`);
+        announceToScreenReader(t('accessibility.navigatedTo', { page: itemText }));
     };
 
     const drawer = (
@@ -158,11 +161,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                                 icon={<LightMode />}
                                 checkedIcon={<DarkMode />}
                                 inputProps={{
-                                    'aria-label': `Switch to ${mode === 'light' ? 'dark' : 'light'} mode`,
+                                    'aria-label': t('accessibility.switchTheme', { mode: mode === 'light' ? t('settings.darkMode') : t('settings.lightMode') }),
                                 }}
                             />
                         }
-                        label={mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                        label={mode === 'dark' ? t('settings.darkMode') : t('settings.lightMode')}
                     />
                 </ListItem>
             </List>
@@ -223,10 +226,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                     >
                         <Avatar
                             sx={{ width: 32, height: 32 }}
-                            alt={user?.firstName ? `${user.firstName} ${user.lastName}` : 'User'}
+                            alt={user?.first_name ? `${user.first_name} ${user.last_name}` : 'User'}
                             src="/static/images/avatar/1.jpg" // Placeholder
                         >
-                            {user?.firstName?.charAt(0) || 'U'}
+                            {user?.first_name?.charAt(0) || 'U'}
                         </Avatar>
                     </IconButton>
                 </Toolbar>

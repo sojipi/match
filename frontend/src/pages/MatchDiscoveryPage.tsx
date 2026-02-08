@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Box,
     Container,
@@ -66,6 +67,7 @@ interface MatchDiscoveryResponse {
 
 const MatchDiscoveryPage: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [matches, setMatches] = useState<PotentialMatch[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -273,7 +275,7 @@ const MatchDiscoveryPage: React.FC = () => {
                                 {currentMatch.age && `, ${currentMatch.age}`}
                                 {currentMatch.is_online && (
                                     <Chip
-                                        label="Online"
+                                        label={t('messages.online')}
                                         size="small"
                                         color="success"
                                         sx={{ ml: 1 }}

@@ -1,0 +1,319 @@
+/* Accessibility Styles */
+
+/* Skip to main content link */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: #000;
+    color: #fff;
+    padding: 8px 16px;
+    text-decoration: none;
+    z-index: 10000;
+    border-radius: 0 0 4px 0;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+}
+
+/* High contrast mode */
+.high-contrast {
+    --primary-color: #0066cc;
+    --secondary-color: #cc6600;
+    --background-color: #ffffff;
+    --text-color: #000000;
+    --border-color: #000000;
+    --focus-color: #ff0000;
+}
+
+.high-contrast * {
+    border-color: var(--border-color) !important;
+}
+
+.high-contrast a {
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.high-contrast button,
+.high-contrast .MuiButton-root {
+    border: 2px solid var(--border-color) !important;
+    font-weight: 600;
+}
+
+.high-contrast :focus,
+.high-contrast :focus-visible {
+    outline: 3px solid var(--focus-color) !important;
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+
+/* Focus visible styles */
+:focus-visible {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* Remove default focus outline for mouse users */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Keyboard navigation indicators */
+.keyboard-navigation-enabled *:focus {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
+}
+
+/* Screen reader optimized mode */
+.screen-reader-optimized {
+    /* Increase spacing for better screen reader navigation */
+}
+
+.screen-reader-optimized button,
+.screen-reader-optimized a,
+.screen-reader-optimized input,
+.screen-reader-optimized select,
+.screen-reader-optimized textarea {
+    margin: 4px;
+}
+
+/* Font size adjustments */
+html {
+    font-size: 16px;
+    /* Default medium */
+}
+
+/* Large text mode */
+html[style*="font-size: 18px"] body {
+    line-height: 1.6;
+}
+
+html[style*="font-size: 20px"] body {
+    line-height: 1.7;
+}
+
+/* Ensure interactive elements are large enough */
+button,
+a,
+input,
+select,
+textarea,
+.MuiButton-root,
+.MuiIconButton-root {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Improve link visibility */
+a {
+    text-decoration: underline;
+    text-decoration-skip-ink: auto;
+}
+
+a:hover,
+a:focus {
+    text-decoration-thickness: 2px;
+}
+
+/* Ensure sufficient color contrast */
+.low-contrast-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    padding: 8px;
+    margin: 8px 0;
+}
+
+/* ARIA live regions */
+[aria-live="polite"],
+[aria-live="assertive"] {
+    position: relative;
+}
+
+/* Focus trap for modals */
+.focus-trap {
+    position: relative;
+}
+
+.focus-trap:focus {
+    outline: none;
+}
+
+/* Accessible form labels */
+label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+/* Required field indicator */
+.required::after {
+    content: " *";
+    color: #d32f2f;
+    font-weight: bold;
+}
+
+/* Error messages */
+.error-message {
+    color: #d32f2f;
+    font-size: 0.875rem;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.error-message::before {
+    content: "⚠";
+    font-weight: bold;
+}
+
+/* Success messages */
+.success-message {
+    color: #2e7d32;
+    font-size: 0.875rem;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.success-message::before {
+    content: "✓";
+    font-weight: bold;
+}
+
+/* Loading states */
+.loading {
+    position: relative;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Disabled states */
+:disabled,
+[aria-disabled="true"] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Tooltip accessibility */
+[role="tooltip"] {
+    position: absolute;
+    z-index: 1000;
+    background: #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    max-width: 300px;
+}
+
+/* Ensure images have alt text */
+img:not([alt]) {
+    border: 2px solid #d32f2f;
+}
+
+/* Accessible tables */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    text-align: left;
+    font-weight: 600;
+    background-color: #f5f5f5;
+}
+
+th,
+td {
+    padding: 12px;
+    border: 1px solid #ddd;
+}
+
+/* Accessible cards */
+.card {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 16px;
+    margin: 8px 0;
+}
+
+.card:focus-within {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+/* Print styles for accessibility */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    a[href]::after {
+        content: " (" attr(href) ")";
+    }
+
+    abbr[title]::after {
+        content: " (" attr(title) ")";
+    }
+}
+
+/* Responsive text sizing */
+@media (max-width: 600px) {
+    html {
+        font-size: 14px;
+    }
+}
+
+@media (min-width: 1200px) {
+    html {
+        font-size: 18px;
+    }
+}
