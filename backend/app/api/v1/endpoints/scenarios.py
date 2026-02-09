@@ -121,7 +121,10 @@ async def get_scenario_library(
         return [ScenarioResponse(**scenario) for scenario in scenarios]
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get scenario library: {str(e)}")
+        import traceback
+        error_detail = f"Failed to get scenario library: {str(e)}\n{traceback.format_exc()}"
+        print(error_detail)  # Log to console
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 @router.get("/recommendations", response_model=List[ScenarioRecommendationResponse])
@@ -151,7 +154,10 @@ async def get_scenario_recommendations(
         return [ScenarioRecommendationResponse(**rec) for rec in recommendations]
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get recommendations: {str(e)}")
+        import traceback
+        error_detail = f"Failed to get recommendations: {str(e)}\n{traceback.format_exc()}"
+        print(error_detail)  # Log to console
+        raise HTTPException(status_code=500, detail=error_detail)
 
 
 @router.post("/simulations", response_model=dict)

@@ -77,28 +77,37 @@ class ScenarioService:
         # Format response
         scenario_list = []
         for scenario in scenarios:
-            # Get cultural adaptation if available
-            adapted_content = self._get_cultural_adaptation(
-                scenario, cultural_context, language
-            )
-            
-            scenario_data = {
-                "id": str(scenario.id),
-                "name": scenario.name,
-                "title": adapted_content.get("title", scenario.title),
-                "description": adapted_content.get("description", scenario.description),
-                "category": scenario.category.value,
-                "difficulty_level": scenario.difficulty_level.value,
-                "estimated_duration_minutes": scenario.estimated_duration_minutes,
-                "personality_dimensions": scenario.personality_dimensions,
-                "value_dimensions": scenario.value_dimensions,
-                "tags": scenario.tags,
-                "user_rating": scenario.user_rating,
-                "usage_count": scenario.usage_count,
-                "success_rate": scenario.success_rate,
-                "content_warnings": scenario.content_warnings
-            }
-            scenario_list.append(scenario_data)
+            try:
+                # Get cultural adaptation if available
+                adapted_content = self._get_cultural_adaptation(
+                    scenario, cultural_context, language
+                )
+                
+                # Handle enum values safely
+                category_value = scenario.category.value if hasattr(scenario.category, 'value') else str(scenario.category)
+                difficulty_value = scenario.difficulty_level.value if hasattr(scenario.difficulty_level, 'value') else int(scenario.difficulty_level) if scenario.difficulty_level else 2
+                
+                scenario_data = {
+                    "id": str(scenario.id),
+                    "name": scenario.name or "",
+                    "title": adapted_content.get("title", scenario.title or ""),
+                    "description": adapted_content.get("description", scenario.description or ""),
+                    "category": category_value,
+                    "difficulty_level": difficulty_value,
+                    "estimated_duration_minutes": scenario.estimated_duration_minutes or 15,
+                    "personality_dimensions": scenario.personality_dimensions or [],
+                    "value_dimensions": scenario.value_dimensions or [],
+                    "tags": scenario.tags or [],
+                    "user_rating": float(scenario.user_rating) if scenario.user_rating else 0.0,
+                    "usage_count": int(scenario.usage_count) if scenario.usage_count else 0,
+                    "success_rate": float(scenario.success_rate) if scenario.success_rate else 0.0,
+                    "content_warnings": scenario.content_warnings or []
+                }
+                scenario_list.append(scenario_data)
+            except Exception as e:
+                # Log error but continue processing other scenarios
+                print(f"Error processing scenario {scenario.id}: {e}")
+                continue
         
         return scenario_list
     
@@ -167,7 +176,7 @@ class ScenarioService:
     ) -> Dict[str, Any]:
         """
         Create a new simulation session.
-        
+
         Args:
             user1_id: First user ID
             user2_id: Second user ID
@@ -175,10 +184,12 @@ class ScenarioService:
             match_id: Optional match ID
             cultural_context: Cultural adaptation context
             language: Language preference
-            
+
         Returns:
             Created simulation session data
         """
+
+
         # Get scenario template
         scenario_query = select(ScenarioTemplate).where(
             ScenarioTemplate.id == scenario_id
@@ -208,29 +219,35 @@ class ScenarioService:
             max_duration_minutes=scenario.estimated_duration_minutes,
             current_phase="setup"
         )
-        
+
         self.db.add(session)
         await self.db.flush()  # Get the ID
-        
-        # Update scenario usage count
-        scenario.usage_count += 1
-        
-        await self.db.commit()
-        
-        return {
+
+        # Build response data before commit (while objects are still attached)
+        response_data = {
             "session_id": str(session.id),
             "scenario": {
                 "id": str(scenario.id),
                 "name": scenario.name,
                 "title": session.session_title,
                 "description": session.session_description,
-                "category": scenario.category.value,
-                "difficulty_level": scenario.difficulty_level.value,
+                "category": scenario.category.value if hasattr(scenario.category, 'value') else str(scenario.category),
+                "difficulty_level": scenario.difficulty_level.value if hasattr(scenario.difficulty_level, 'value') else str(scenario.difficulty_level),
                 "estimated_duration_minutes": scenario.estimated_duration_minutes
             },
-            "status": session.status.value,
-            "created_at": session.created_at.isoformat()
+            "status": session.status.value if hasattr(session.status, 'value') else str(session.status),
+            "created_at": session.created_at.isoformat() if session.created_at else None
         }
+
+        # Update scenario usage count (handle None case)
+        if scenario.usage_count is None:
+            scenario.usage_count = 1
+        else:
+            scenario.usage_count += 1
+
+        await self.db.commit()
+
+        return response_data
     
     async def start_simulation(self, session_id: str) -> Dict[str, Any]:
         """
@@ -279,6 +296,10 @@ class ScenarioService:
         
         self.db.add(initial_message)
         await self.db.commit()
+        
+        # Start AI simulation in background (similar to AI conversation)
+        import asyncio
+        asyncio.create_task(self._run_ai_simulation(session_id))
         
         return {
             "session_id": str(session.id),
@@ -509,8 +530,8 @@ class ScenarioService:
         adapted_content["title"] = scenario.title
         adapted_content["description"] = scenario.description
         adapted_content["setup_prompt"] = scenario.setup_prompt
-        adapted_content["initial_prompt"] = scenario.initial_prompt
-        adapted_content["guiding_questions"] = scenario.guiding_questions
+        adapted_content["initial_prompt"] = scenario.initial_prompt or ""
+        adapted_content["guiding_questions"] = scenario.guiding_questions or []
         
         # Apply cultural adaptations if available
         if cultural_context and scenario.cultural_adaptations:
@@ -561,18 +582,26 @@ class ScenarioService:
         
         recommendations = []
         for scenario, score in scored_scenarios[:limit]:
-            recommendations.append({
-                "id": str(scenario.id),
-                "name": scenario.name,
-                "title": scenario.title,
-                "description": scenario.description,
-                "category": scenario.category.value,
-                "difficulty_level": scenario.difficulty_level.value,
-                "estimated_duration_minutes": scenario.estimated_duration_minutes,
-                "personality_match_score": score,
-                "tags": scenario.tags,
-                "user_rating": scenario.user_rating
-            })
+            try:
+                # Handle enum values safely
+                category_value = scenario.category.value if hasattr(scenario.category, 'value') else str(scenario.category)
+                difficulty_value = scenario.difficulty_level.value if hasattr(scenario.difficulty_level, 'value') else int(scenario.difficulty_level) if scenario.difficulty_level else 2
+                
+                recommendations.append({
+                    "id": str(scenario.id),
+                    "name": scenario.name or "",
+                    "title": scenario.title or "",
+                    "description": scenario.description or "",
+                    "category": category_value,
+                    "difficulty_level": difficulty_value,
+                    "estimated_duration_minutes": scenario.estimated_duration_minutes or 15,
+                    "personality_match_score": float(score),
+                    "tags": scenario.tags or [],
+                    "user_rating": float(scenario.user_rating) if scenario.user_rating else 0.0
+                })
+            except Exception as e:
+                print(f"Error processing recommendation for scenario {scenario.id}: {e}")
+                continue
         
         return recommendations
     
@@ -590,8 +619,9 @@ class ScenarioService:
         factors = 0
         
         # Check personality dimensions the scenario tests
-        if scenario.personality_dimensions:
-            for dimension in scenario.personality_dimensions:
+        personality_dimensions = scenario.personality_dimensions or []
+        if personality_dimensions:
+            for dimension in personality_dimensions:
                 if dimension in ["openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"]:
                     trait1 = getattr(profile1, dimension, None)
                     trait2 = getattr(profile2, dimension, None)
@@ -687,3 +717,178 @@ class ScenarioService:
         if scenario:
             # Placeholder success rate calculation
             scenario.success_rate = min(1.0, scenario.success_rate + 0.01)
+    
+    async def _run_ai_simulation(self, session_id: str):
+        """
+        Run AI simulation with avatar agents (similar to AI conversation).
+        This runs in the background and generates messages automatically.
+        """
+        try:
+            from app.services.ai_agent_service import AIAgentService
+            from app.websocket.manager import manager
+            import asyncio
+            
+            # Create new database session for background task
+            from app.core.database import get_db
+            async for db in get_db():
+                try:
+                    # Get session details
+                    session_query = select(SimulationSession).options(
+                        selectinload(SimulationSession.scenario_template),
+                        selectinload(SimulationSession.user1),
+                        selectinload(SimulationSession.user2)
+                    ).where(SimulationSession.id == session_id)
+                    
+                    session_result = await db.execute(session_query)
+                    session = session_result.scalar_one_or_none()
+                    
+                    if not session:
+                        print(f"Session {session_id} not found for AI simulation")
+                        return
+                    
+                    # Initialize AI agent service
+                    ai_service = AIAgentService(db)
+                    
+                    # Get avatar agents for both users
+                    try:
+                        agent1 = await ai_service.get_user_avatar_agent(str(session.user1_id))
+                    except Exception as e:
+                        print(f"Failed to get agent1: {e}")
+                        agent1 = None
+                    
+                    try:
+                        agent2 = await ai_service.get_user_avatar_agent(str(session.user2_id))
+                    except Exception as e:
+                        print(f"Failed to get agent2: {e}")
+                        agent2 = None
+                    
+                    if not agent1 or not agent2:
+                        # Broadcast error message
+                        await manager.broadcast_to_session({
+                            "type": "error",
+                            "message": "AI avatars not ready. Please complete personality assessment first.",
+                            "timestamp": datetime.utcnow().isoformat()
+                        }, str(session_id))  # Convert UUID to string
+                        return
+                    
+                    # Get scenario context
+                    scenario = session.scenario_template
+                    scenario_context = f"""
+You are participating in a relationship scenario simulation: {scenario.title}
+
+Context: {scenario.context}
+
+Description: {scenario.description}
+
+Your goal is to engage authentically in this scenario, showing your personality and values.
+Discuss the topic naturally, ask questions, share your thoughts, and try to understand your partner's perspective.
+"""
+                    
+                    # Run simulation for a few turns (similar to AI conversation)
+                    max_turns = 10
+                    turn_count = 0
+                    
+                    # Broadcast that simulation is starting
+                    await manager.broadcast_to_session({
+                        "type": "simulation_starting",
+                        "message": "AI avatars are beginning the scenario...",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, str(session_id))  # Convert UUID to string
+                    
+                    while turn_count < max_turns and session.status == SimulationStatus.ACTIVE:
+                        # Alternate between agents
+                        current_agent = agent1 if turn_count % 2 == 0 else agent2
+                        current_user = session.user1 if turn_count % 2 == 0 else session.user2
+                        
+                        # Get conversation history
+                        messages_query = select(SimulationMessage).where(
+                            SimulationMessage.session_id == session_id
+                        ).order_by(SimulationMessage.timestamp)
+                        messages_result = await db.execute(messages_query)
+                        messages = messages_result.scalars().all()
+                        
+                        # Build conversation history for context
+                        conversation_history = "\n".join([
+                            f"{msg.sender_name}: {msg.content}"
+                            for msg in messages[-5:]  # Last 5 messages
+                        ])
+                        
+                        # Generate response
+                        prompt = f"{scenario_context}\n\nConversation so far:\n{conversation_history}\n\nYour response:"
+                        
+                        # Build conversation history in the format expected by generate_agent_response
+                        history_list = [
+                            {
+                                "role": "user" if i % 2 == 0 else "assistant",
+                                "content": msg.content
+                            }
+                            for i, msg in enumerate(messages[-5:])
+                        ]
+                        
+                        try:
+                            response = await ai_service.generate_agent_response(
+                                session_id,
+                                str(current_user.id),
+                                history_list
+                            )
+                        except Exception as e:
+                            print(f"Error generating response: {e}")
+                            response = "I'm thinking about this..."
+                        
+                        # Create message
+                        new_message = SimulationMessage(
+                            session_id=session.id,
+                            sender_id=str(current_user.id),
+                            sender_type="user_avatar",
+                            sender_name=f"{current_user.first_name} {current_user.last_name[0]}.",
+                            content=response,
+                            message_type="text",
+                            scenario_phase=session.current_phase,
+                            turn_number=turn_count + 1
+                        )
+                        
+                        db.add(new_message)
+                        session.message_count += 1
+                        session.turn_count += 1
+                        await db.commit()
+                        
+                        # Broadcast message via WebSocket
+                        session_id_str = str(session_id)
+                        print(f"DEBUG: Broadcasting message to session {session_id_str}")
+                        print(f"DEBUG: Active sessions: {list(manager.session_connections.keys())}")
+                        await manager.broadcast_to_session({
+                            "type": "message",
+                            "message": {
+                                "message_id": str(new_message.id),
+                                "sender_name": new_message.sender_name,
+                                "sender_type": new_message.sender_type,
+                                "content": new_message.content,
+                                "message_type": new_message.message_type,
+                                "scenario_phase": new_message.scenario_phase,
+                                "timestamp": new_message.timestamp.isoformat(),
+                                "is_highlighted": new_message.is_highlighted
+                            },
+                            "timestamp": datetime.utcnow().isoformat()
+                        }, session_id_str)  # Convert UUID to string
+                        print(f"DEBUG: Message broadcast complete")
+                        
+                        turn_count += 1
+                        
+                        # Wait a bit between messages for natural pacing
+                        await asyncio.sleep(3)
+                    
+                    # Simulation complete
+                    await manager.broadcast_to_session({
+                        "type": "simulation_complete",
+                        "message": "Scenario simulation complete. Generating compatibility analysis...",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }, str(session_id))  # Convert UUID to string
+                    
+                finally:
+                    await db.close()
+                    break  # Exit the async for loop
+                    
+        except Exception as e:
+            print(f"Error in AI simulation: {e}")
+            import traceback
+            traceback.print_exc()

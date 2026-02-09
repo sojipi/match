@@ -222,6 +222,7 @@
         "discoverMore": "发现更多",
         "message": "消息",
         "aiChat": "AI对话",
+        "scenario": "场景模拟",
         "report": "查看报告",
         "tabs": {
             "all": "全部",
@@ -259,6 +260,7 @@
             "viewReport": "查看报告",
             "directMessage": "直接消息",
             "aiConversation": "AI对话",
+            "scenarioSimulation": "场景模拟",
             "viewHistory": "查看对话历史",
             "blockUser": "屏蔽用户",
             "reportUser": "举报用户"

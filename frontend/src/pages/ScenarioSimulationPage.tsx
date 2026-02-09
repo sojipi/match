@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import {
     Box,
     Container,
@@ -24,6 +24,7 @@ const ScenarioSimulationPage: React.FC = () => {
     const { matchId } = useParams<{ matchId: string }>();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const location = useLocation();
     const currentUser = useAppSelector(state => state.auth.user);
 
     const [matchUserId, setMatchUserId] = useState<string>('');
@@ -33,23 +34,40 @@ const ScenarioSimulationPage: React.FC = () => {
 
     // Get match user ID from URL params or search params
     useEffect(() => {
-        const userIdFromParams = searchParams.get('userId');
-        const userNameFromParams = searchParams.get('userName');
+        // First check if data was passed via navigation state
+        const stateData = location.state as { matchUserId?: string; matchUserName?: string } | null;
 
-        if (userIdFromParams) {
-            setMatchUserId(userIdFromParams);
-            setMatchUserName(userNameFromParams || 'Your Match');
+        if (stateData?.matchUserId) {
+            setMatchUserId(stateData.matchUserId);
+            setMatchUserName(stateData.matchUserName || 'Your Match');
             setLoading(false);
-        } else if (matchId) {
-            loadMatchDetails();
         } else {
-            setError('No match information provided');
-            setLoading(false);
+            // Fall back to search params
+            const userIdFromParams = searchParams.get('userId');
+            const userNameFromParams = searchParams.get('userName');
+
+            if (userIdFromParams) {
+                setMatchUserId(userIdFromParams);
+                setMatchUserName(userNameFromParams || 'Your Match');
+                setLoading(false);
+            } else if (matchId) {
+                loadMatchDetails();
+            } else {
+                setError('No match information provided');
+                setLoading(false);
+            }
         }
-    }, [matchId, searchParams]);
+    }, [matchId, searchParams, location.state]);
 
     const loadMatchDetails = async () => {
         if (!matchId) return;
+
+        // Check if currentUser is available
+        if (!currentUser) {
+            setError('User not authenticated. Please log in again.');
+            setLoading(false);
+            return;
+        }
 
         try {
             setLoading(true);
@@ -66,7 +84,7 @@ const ScenarioSimulationPage: React.FC = () => {
             const matchData = await response.json();
 
             // Determine which user is the match (not the current user)
-            const otherUser = matchData.user1.id === currentUser?.id
+            const otherUser = matchData.user1.id === currentUser.id
                 ? matchData.user2
                 : matchData.user1;
 

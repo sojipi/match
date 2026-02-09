@@ -40,7 +40,8 @@ import {
     Visibility,
     Schedule,
     TrendingUp,
-    History
+    History,
+    Psychology
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
@@ -142,6 +143,16 @@ const MatchesPage: React.FC = () => {
     const handleViewConversationHistory = (matchId: string) => {
         // Navigate to sessions list for this match
         navigate(`/match/${matchId}/conversations`);
+    };
+
+    const handleStartScenarioSimulation = (match: MatchHistoryItem) => {
+        // Navigate to scenario simulation page
+        navigate(`/scenario-simulation/${match.id}`, {
+            state: {
+                matchUserId: match.user.id,
+                matchUserName: match.user.name
+            }
+        });
     };
 
     const handleBlockUser = async (matchId: string) => {
@@ -416,6 +427,18 @@ const MatchesPage: React.FC = () => {
                                             {t('matches.aiChat')}
                                         </Button>
                                         <Button
+                                            variant="contained"
+                                            size="small"
+                                            color="secondary"
+                                            startIcon={<Psychology />}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleStartScenarioSimulation(match);
+                                            }}
+                                        >
+                                            {t('matches.scenario')}
+                                        </Button>
+                                        <Button
                                             variant="outlined"
                                             size="small"
                                             startIcon={<Visibility />}
@@ -530,7 +553,7 @@ const MatchesPage: React.FC = () => {
                                 {t('matches.details.directMessage')}
                             </Button>
                             <Button
-                                variant="contained"
+                                variant="outlined"
                                 startIcon={<Message />}
                                 onClick={() => {
                                     setShowMatchDetails(false);
@@ -538,6 +561,17 @@ const MatchesPage: React.FC = () => {
                                 }}
                             >
                                 {t('matches.details.aiConversation')}
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                startIcon={<Psychology />}
+                                onClick={() => {
+                                    setShowMatchDetails(false);
+                                    handleStartScenarioSimulation(selectedMatch);
+                                }}
+                            >
+                                {t('matches.details.scenarioSimulation')}
                             </Button>
                         </DialogActions>
                     </>
@@ -567,6 +601,15 @@ const MatchesPage: React.FC = () => {
                 }}>
                     <Message sx={{ mr: 1 }} />
                     {t('matches.details.aiConversation')}
+                </MenuItem>
+                <MenuItem onClick={() => {
+                    if (selectedMatchForMenu) {
+                        handleStartScenarioSimulation(selectedMatchForMenu);
+                    }
+                    handleMenuClose();
+                }}>
+                    <Psychology sx={{ mr: 1 }} />
+                    {t('matches.details.scenarioSimulation')}
                 </MenuItem>
                 <MenuItem onClick={() => {
                     if (selectedMatchForMenu) {

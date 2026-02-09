@@ -155,7 +155,7 @@ const ScenarioLibrary: React.FC<ScenarioLibraryProps> = ({
     const filteredScenarios = scenarios.filter(scenario =>
         scenario.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         scenario.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        scenario.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+        (scenario.tags && scenario.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
     );
 
     const handleScenarioClick = (scenario: Scenario) => {
@@ -343,10 +343,10 @@ const ScenarioLibrary: React.FC<ScenarioLibraryProps> = ({
                                 </Box>
 
                                 <Box display="flex" flexWrap="wrap" gap={0.5} mb={2}>
-                                    {scenario.tags.slice(0, 3).map((tag) => (
+                                    {scenario.tags && scenario.tags.slice(0, 3).map((tag) => (
                                         <Chip key={tag} label={tag} size="small" variant="outlined" />
                                     ))}
-                                    {scenario.tags.length > 3 && (
+                                    {scenario.tags && scenario.tags.length > 3 && (
                                         <Chip label={`+${scenario.tags.length - 3} more`} size="small" variant="outlined" />
                                     )}
                                 </Box>
@@ -366,7 +366,7 @@ const ScenarioLibrary: React.FC<ScenarioLibraryProps> = ({
                                     </Box>
                                 </Box>
 
-                                {scenario.content_warnings.length > 0 && (
+                                {scenario.content_warnings && scenario.content_warnings.length > 0 && (
                                     <Box mt={1} display="flex" alignItems="center" gap={1}>
                                         <Warning fontSize="small" color="warning" />
                                         <Typography variant="caption" color="warning.main">
@@ -424,7 +424,7 @@ const ScenarioLibrary: React.FC<ScenarioLibraryProps> = ({
                                 </Grid>
                             </Grid>
 
-                            {selectedScenario.personality_dimensions.length > 0 && (
+                            {selectedScenario.personality_dimensions && selectedScenario.personality_dimensions.length > 0 && (
                                 <Box mb={2}>
                                     <Typography variant="subtitle2" gutterBottom>
                                         Personality Dimensions Explored
@@ -437,7 +437,7 @@ const ScenarioLibrary: React.FC<ScenarioLibraryProps> = ({
                                 </Box>
                             )}
 
-                            {selectedScenario.value_dimensions.length > 0 && (
+                            {selectedScenario.value_dimensions && selectedScenario.value_dimensions.length > 0 && (
                                 <Box mb={2}>
                                     <Typography variant="subtitle2" gutterBottom>
                                         Values Explored
@@ -450,7 +450,7 @@ const ScenarioLibrary: React.FC<ScenarioLibraryProps> = ({
                                 </Box>
                             )}
 
-                            {selectedScenario.content_warnings.length > 0 && (
+                            {selectedScenario.content_warnings && selectedScenario.content_warnings.length > 0 && (
                                 <Alert severity="warning" sx={{ mb: 2 }}>
                                     <Typography variant="subtitle2" gutterBottom>
                                         Content Warnings

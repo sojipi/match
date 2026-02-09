@@ -17,6 +17,7 @@ import CompatibilityReportPage from './pages/CompatibilityReportPage';
 import ConversationHistoryPage from './pages/ConversationHistoryPage';
 import MatchConversationsPage from './pages/MatchConversationsPage';
 import ProfileManagementPage from './pages/ProfileManagementPage';
+import ScenarioSimulationPage from './pages/ScenarioSimulationPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -184,6 +185,14 @@ const App: React.FC = () => {
                         <AppLayout>
                             <ConversationHistoryPage />
                         </AppLayout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/scenario-simulation/:matchId"
+                element={
+                    <ProtectedRoute>
+                        <ScenarioSimulationPage />
                     </ProtectedRoute>
                 }
             />

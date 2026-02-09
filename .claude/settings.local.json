@@ -22,7 +22,10 @@
       "Bash(node -e:*)",
       "Bash(psql:*)",
       "Bash(alembic upgrade:*)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(./venv/Scripts/python.exe:*)",
+      "Bash(tail:*)",
+      "Bash(echo:*)"
     ]
   }
 }

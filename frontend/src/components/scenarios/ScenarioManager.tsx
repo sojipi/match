@@ -336,7 +336,9 @@ const ScenarioManager: React.FC<ScenarioManagerProps> = ({
                             </Typography>
                             <Typography variant="body2" paragraph>
                                 This simulation will take approximately {selectedScenario.estimated_duration_minutes} minutes
-                                and will explore {selectedScenario.personality_dimensions.join(', ')} personality dimensions.
+                                {selectedScenario.personality_dimensions && selectedScenario.personality_dimensions.length > 0 && (
+                                    <> and will explore {selectedScenario.personality_dimensions.join(', ')} personality dimensions</>
+                                )}.
                             </Typography>
                             <Typography variant="body2">
                                 Are you ready to start the simulation with your match?

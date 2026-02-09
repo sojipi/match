@@ -220,6 +220,7 @@
         "discoverMore": "Discover More",
         "message": "Message",
         "aiChat": "AI Chat",
+        "scenario": "Scenario",
         "report": "Report",
         "directMessage": "Direct Message",
         "aiConversation": "AI Conversation",
@@ -259,7 +260,17 @@
         },
         "details": {
             "conversations": "Conversations",
-            "matchedOn": "Matched on {{date}}"
+            "compatibility": "Compatibility",
+            "matchedOn": "Matched on",
+            "lastInteraction": "Last interaction",
+            "close": "Close",
+            "directMessage": "Direct Message",
+            "aiConversation": "AI Conversation",
+            "scenarioSimulation": "Scenario Simulation",
+            "viewReport": "View Report",
+            "viewHistory": "View History",
+            "blockUser": "Block User",
+            "reportUser": "Report User"
         }
     },
     "theater": {
@@ -557,6 +568,7 @@
         "openMenu": "Open menu",
         "closeMenu": "Close menu",
         "toggleTheme": "Toggle theme",
+        "switchTheme": "Switch theme",
         "changeLanguage": "Change language",
         "increaseFontSize": "Increase font size",
         "decreaseFontSize": "Decrease font size",

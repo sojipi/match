@@ -91,6 +91,7 @@ const SimulationTheater: React.FC<SimulationTheaterProps> = ({
     const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
     const [currentPhase, setCurrentPhase] = useState('');
     const [phaseProgress, setPhaseProgress] = useState(0);
+    const [wsConnected, setWsConnected] = useState(false);
     const [liveScores, setLiveScores] = useState({
         collaboration: 0,
         communication: 0,
@@ -141,38 +142,46 @@ const SimulationTheater: React.FC<SimulationTheaterProps> = ({
 
     const setupWebSocket = () => {
         const token = localStorage.getItem('token');
-        const wsUrl = `ws://localhost:8000/ws/simulation/${sessionId}?token=${token}`;
+        const wsUrl = `ws://localhost:8000/ws/session/${sessionId}?token=${token}`;
+
+        console.log('Setting up WebSocket connection to:', wsUrl);
+        console.log('Session ID:', sessionId);
 
         wsRef.current = new WebSocket(wsUrl);
 
         wsRef.current.onopen = () => {
-            console.log('WebSocket connected to simulation');
+            console.log('WebSocket connected to simulation session:', sessionId);
+            setWsConnected(true);
         };
 
         wsRef.current.onmessage = (event) => {
+            console.log('WebSocket message received:', event.data);
             const data = JSON.parse(event.data);
             handleWebSocketMessage(data);
         };
 
         wsRef.current.onclose = () => {
             console.log('WebSocket disconnected from simulation');
+            setWsConnected(false);
         };
 
         wsRef.current.onerror = (error) => {
             console.error('WebSocket error:', error);
+            setWsConnected(false);
         };
     };
 
     const handleWebSocketMessage = (data: any) => {
         switch (data.type) {
             case 'message':
-                if (session) {
-                    setSession(prev => prev ? {
+                setSession(prev => {
+                    if (!prev) return null;
+                    return {
                         ...prev,
-                        messages: [...prev.messages, data.message],
-                        message_count: prev.message_count + 1
-                    } : null);
-                }
+                        messages: [...(prev.messages || []), data.message],
+                        message_count: (prev.message_count || 0) + 1
+                    };
+                });
                 break;
             case 'phase_change':
                 setCurrentPhase(data.phase);
@@ -188,10 +197,21 @@ const SimulationTheater: React.FC<SimulationTheaterProps> = ({
             case 'progress_update':
                 setPhaseProgress(data.progress);
                 break;
+            case 'connection_established':
+                console.log('Connection established:', data);
+                break;
+            case 'simulation_starting':
+                console.log('Simulation starting:', data.message);
+                break;
         }
     };
 
     const startSimulation = async () => {
+        if (!wsConnected) {
+            setError('WebSocket not connected. Please wait and try again.');
+            return;
+        }
+
         try {
             const response = await fetch(`/api/v1/scenarios/simulations/${sessionId}/start`, {
                 method: 'POST',
@@ -205,6 +225,9 @@ const SimulationTheater: React.FC<SimulationTheaterProps> = ({
             }
 
             setIsPlaying(true);
+
+            // Reload session to get the initial message
+            await loadSession();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to start simulation');
         }

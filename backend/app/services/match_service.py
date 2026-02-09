@@ -56,67 +56,8 @@ class MatchService:
             selectinload(User.personality_profile),
             selectinload(User.dating_preferences)
         ).where(
-            and_(
-                User.id != user_id,  # Exclude self
-                User.is_active == True,  # Only active users
-                User.is_verified == True  # Only verified users
-            )
+            User.id != user_id  # Only exclude self
         )
-        
-        # Apply user's dating preferences
-        if current_user.dating_preferences:
-            prefs = current_user.dating_preferences
-            
-            # Age filter
-            if prefs.age_range_min and prefs.age_range_max:
-                today = date.today()
-                min_birth_date = date(today.year - prefs.age_range_max, today.month, today.day)
-                max_birth_date = date(today.year - prefs.age_range_min, today.month, today.day)
-                query = query.where(
-                    and_(
-                        User.date_of_birth >= min_birth_date,
-                        User.date_of_birth <= max_birth_date
-                    )
-                )
-            
-            # Gender preference filter
-            if prefs.gender_preference:
-                query = query.where(User.gender.in_(prefs.gender_preference))
-        
-        # Apply additional filters if provided
-        if filters:
-            if filters.get('age_min'):
-                today = date.today()
-                max_birth_date = date(today.year - filters['age_min'], today.month, today.day)
-                query = query.where(User.date_of_birth <= max_birth_date)
-            
-            if filters.get('age_max'):
-                today = date.today()
-                min_birth_date = date(today.year - filters['age_max'], today.month, today.day)
-                query = query.where(User.date_of_birth >= min_birth_date)
-        
-        # Exclude users already matched or passed
-        existing_matches_query = select(Match.user2_id).where(
-            and_(
-                Match.user1_id == user_id,
-                or_(
-                    Match.status != MatchStatus.EXPIRED,
-                    Match.user1_interest.isnot(None)
-                )
-            )
-        ).union(
-            select(Match.user1_id).where(
-                and_(
-                    Match.user2_id == user_id,
-                    or_(
-                        Match.status != MatchStatus.EXPIRED,
-                        Match.user2_interest.isnot(None)
-                    )
-                )
-            )
-        )
-        
-        query = query.where(User.id.not_in(existing_matches_query))
         
         # Get total count
         count_query = select(func.count()).select_from(query.subquery())

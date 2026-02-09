@@ -239,8 +239,15 @@ class ConnectionManager:
         exclude_websocket: Optional[WebSocket] = None
     ):
         """Broadcast a message to all connections in a session."""
+        print(f"DEBUG: broadcast_to_session called with session_id={session_id}")
+        print(f"DEBUG: Available sessions: {list(self.session_connections.keys())}")
+        
         if session_id not in self.session_connections:
+            print(f"DEBUG: Session {session_id} not found in session_connections")
             return
+        
+        connection_count = len(self.session_connections[session_id])
+        print(f"DEBUG: Broadcasting to {connection_count} connections in session {session_id}")
         
         disconnected = []
         for connection in self.session_connections[session_id]:
@@ -249,8 +256,10 @@ class ConnectionManager:
                 
             try:
                 await connection.send_text(json.dumps(message))
+                print(f"DEBUG: Successfully sent message to connection")
             except Exception as e:
                 logger.error(f"Error broadcasting to connection: {e}")
+                print(f"DEBUG: Error broadcasting to connection: {e}")
                 disconnected.append(connection)
         
         # Clean up disconnected connections
