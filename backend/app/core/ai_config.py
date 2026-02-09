@@ -127,14 +127,14 @@ class MockModelWrapper:
 # Configuration for different AI models
 AI_MODEL_CONFIGS = {
     "gemini_flash": {
-        "model_name": "gemini-2.5-flash-lite",
+        "model_name": "gemini-3-flash",
         "temperature": 0.7,
         "max_tokens": 1000,
         "top_p": 0.9,
         "top_k": 40
     },
     "gemini_pro": {
-        "model_name": "gemini-2.5-pro", 
+        "model_name": "gemini-3-pro", 
         "temperature": 0.7,
         "max_tokens": 2000,
         "top_p": 0.9,
