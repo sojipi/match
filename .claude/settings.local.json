@@ -25,7 +25,8 @@
       "Bash(tee:*)",
       "Bash(./venv/Scripts/python.exe:*)",
       "Bash(tail:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(timeout 5 tail:*)"
     ]
   }
 }
