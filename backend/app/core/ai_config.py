@@ -127,7 +127,7 @@ class MockModelWrapper:
 # Configuration for different AI models
 AI_MODEL_CONFIGS = {
     "gemini_flash": {
-        "model_name": "gemini-3-flash",
+        "model_name": "gemini-3-flash-preview",
         "temperature": 0.7,
         "max_tokens": 1000,
         "top_p": 0.9,
